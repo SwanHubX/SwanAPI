@@ -4,7 +4,7 @@ from utils.yaml_process import SwanConfig
 class DockerfileBuild():
     def __init__(self, configs: SwanConfig):
         self.config = configs
-        self.python_prepackage = ["fastapi", "uvicorn[standard]"]
+        self.python_prepackage = ["fastapi", "uvicorn[standard]", "python-multipart"]
 
     def get_dockerfile(self):
         # 根据build中的信息，构建一个Dockerfile
@@ -40,12 +40,15 @@ RUN apt-get install -y python3 curl && \
         return prefile_apt, prefile_python
 
     def get_apt_packages(self):
-        apt_packages = ""
-        for package in self.config.system_packages:
-            apt_packages += package + " "
-        return """
+        if self.config.system_packages is None:
+            return ""
+        else:
+            apt_packages = ""
+            for package in self.config.system_packages:
+                apt_packages += package + " "
+            return """
 RUN apt-get install -y --no-install-recommends {}
-""".format(apt_packages)
+    """.format(apt_packages)
 
     def get_python_packages(self, prepackages):
         pip_packages = ""
@@ -69,7 +72,7 @@ COPY . /app
 
 WORKDIR /app
 
-CMD [\"uvicorn\", \"{}\", \"--host,\", \"{}\",  \"--port\", \"{}\"]""".format(self.config.cli, self.config.predict_host, self.config.predict_port)
+CMD [\"uvicorn\", \"{}\", \"--host\", \"{}\",  \"--port\", \"{}\"]""".format(self.config.cli, self.config.predict_host, self.config.predict_port)
 
 
 

@@ -13,7 +13,9 @@ class SwanConfig:
         self.config_buid = self.config["build"]
         # 获取build中的信息
         self.gpu = self.bool_typecheck(self.config_buid["gpu"])
-        self.system_packages = self.config_buid["system_packages"]
+        if "system_packages" in self.config_buid:
+            self.system_packages = self.config_buid["system_packages"]
+        else: self.system_packages  = None
         self.python_version = self.config_buid["python_version"]
         self.python_packages = self.config_buid["python_packages"]
 
