@@ -13,4 +13,4 @@ def get_yaml(filename: str):
 
 
 if __name__ == "__main__":
-    get_yaml("../swan.yaml")
+    print(get_yaml("../swan.yaml"))
