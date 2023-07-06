@@ -9,7 +9,7 @@ class SwanConfig:
     def __init__(self, filename):
         self.config = self.yaml2dict(filename)
 
-        # 拆分yaml文件的build和predict部分
+        #  build部分
         self.config_buid = self.config["build"]
         # 获取build中的信息
         self.gpu = self.bool_typecheck(self.config_buid["gpu"])
@@ -19,6 +19,9 @@ class SwanConfig:
 
         # 获得predict重的信息
         self.config_predict = self.config["predict"]
+        self.cli = self.config_predict["cli"]
+        self.predict_host = self.config_predict["host"]
+        self.predict_port = self.config_predict["port"]
 
     def bool_typecheck(self, input):
         # 如果yaml中的gpu项不为bool值，则报错
