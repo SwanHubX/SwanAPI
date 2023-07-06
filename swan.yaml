@@ -5,5 +5,5 @@ build:
     - "libglib2.0-0"
   python_version: "3.10"
   python_packages:
-    - "torch==1.8.1"
+    - "flask"
 predict: "predict.py:app"

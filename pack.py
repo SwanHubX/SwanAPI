@@ -1,5 +1,6 @@
 from utils.yaml_process import get_yaml
 
+
 def gpu_yaml_process(gpu: str):
     if isinstance(gpu, bool):
         return gpu
@@ -11,6 +12,7 @@ def gpu_yaml_process(gpu: str):
     else:
         raise "[Error] 'gpu' in swan.yaml is not 'true' or 'false'"
     return gpu
+
 
 # 获取本地yaml文件
 config = get_yaml("swan.yaml")
@@ -25,7 +27,6 @@ system_packages = config_buid["system_packages"]
 python_version = config_buid["python_version"]
 python_packages = config_buid["python_packages"]
 
-
 # 根据build中的信息，构建一个Dockerfile
 with open("Dockerfile", "w") as f:
     # if not gpu:
@@ -34,7 +35,9 @@ with open("Dockerfile", "w") as f:
 
     # 换源、apt更新
     f.write("""
-RUN apt-get clean  && \ 
+RUN sed -i s@/archive.ubuntu.com/@/mirrors.aliyun.com/@g /etc/apt/sources.list  && \ 
+    sed -i s@/security.ubuntu.com/@/mirrors.aliyun.com/@g /etc/apt/sources.list  && \ 
+    apt-get clean  && \ 
     apt-get update
     """)
 
