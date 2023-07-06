@@ -6,7 +6,7 @@ from utils.docker_build import DockerfileBuild
 import subprocess
 import os
 
-image_name = "swan006"
+image_name = "swan007"
 
 # 获取本地yaml文件
 config = SwanConfig("swan.yaml")

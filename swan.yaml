@@ -1,12 +1,14 @@
 build:
   gpu: false
   system_packages:
-    - "ffmpeg"
+    - "libgl1-mesa-glx"
+    - "libglib2.0-0"
   python_version: "3.10"
   python_packages:
     - "numpy"
+    - "onnxruntime"
     - "opencv-python"
 predict:
-  cli: "predict:app"
+  cli: "predict:Inference"
   host: "0.0.0.0"
   port: 8000
