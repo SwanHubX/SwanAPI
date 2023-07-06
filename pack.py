@@ -46,7 +46,10 @@ RUN sed -i s@/archive.ubuntu.com/@/mirrors.aliyun.com/@g /etc/apt/sources.list  
 RUN apt-get install -y python3 curl && \ 
     curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py  && \ 
     python3 get-pip.py && \ 
-    pip3 install -U pip &&
+    pip3 install -U pip && \ 
+    pip3 config set global.index-url http://mirrors.cloud.aliyuncs.com/pypi/simple/ && \ 
+    pip3 config set global.trusted-host mirrors.cloud.aliyuncs.com 
+    
     """)
 
     # 安装apt包
