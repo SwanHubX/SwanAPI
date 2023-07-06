@@ -20,7 +20,6 @@ config = get_yaml("swan.yaml")
 # 拆分yaml文件的build和predict部分
 config_buid = config["build"]
 config_predict = config["predict"]
-print(config_predict)
 
 # 获取build中的信息
 gpu = gpu_yaml_process(config_buid["gpu"])
