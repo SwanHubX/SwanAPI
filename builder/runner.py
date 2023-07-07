@@ -42,8 +42,8 @@ class SwanConfig:
         # 获得predict重的信息
         self.config_predict = self.config["predict"]
         # self.cli = self.config_predict["cli"]
-        self.cli = "server:app"
-        self.predict_host = self.config_predict["host"]
+        self.cli = "predict.py"
+        self.predict_host = "0.0.0.0"
         self.predict_port = self.config_predict["port"]
 
     def bool_typecheck(self, input):
@@ -134,5 +134,8 @@ COPY . /app
 
 WORKDIR /app
 
-CMD [\"uvicorn\", \"{}\", \"--host\", \"{}\",  \"--port\", \"{}\"]""".format(
-            self.config.cli, self.config.predict_host, self.config.predict_port)
+CMD [\"python\", \"{}\"]""".format(self.config.cli)
+
+# CMD [\"python\", \"{}\", \"--host\", \"{}\",  \"--port\", \"{}\"]""".format(
+#             self.config.cli, self.config.predict_host, self.config.predict_port)
+
