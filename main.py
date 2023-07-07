@@ -1,5 +1,5 @@
 """
-一键式打包的执行文件
+一键打包
 """
 from builder.runner import Runner
 
