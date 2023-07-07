@@ -35,9 +35,16 @@ class SwanConfig:
         self.gpu = self.bool_typecheck(self.config_buid["gpu"])
         if "system_packages" in self.config_buid:
             self.system_packages = self.config_buid["system_packages"]
-        else: self.system_packages  = None
+        else:
+            self.system_packages = None
+
         self.python_version = self.config_buid["python_version"]
         self.python_packages = self.config_buid["python_packages"]
+
+        if "system_packages" in self.config_buid:
+            self.system_packages = self.config_buid["system_packages"]
+        else:
+            self.python_server = None
 
         # 获得predict重的信息
         self.config_predict = self.config["predict"]
@@ -118,6 +125,10 @@ RUN apt-get install -y --no-install-recommends {}
             pip_packages += prepackage + " "
         for package in self.config.python_packages:
             pip_packages += package + " "
+
+        if self.config.python_server == "cn":
+            pip_packages += " -i " + "https://pypi.tuna.tsinghua.edu.cn/simple"
+
         return """
 RUN pip3 install --no-cache-dir {}
 """.format(pip_packages)
@@ -138,4 +149,3 @@ CMD [\"python\", \"{}\"]""".format(self.config.cli)
 
 # CMD [\"python\", \"{}\", \"--host\", \"{}\",  \"--port\", \"{}\"]""".format(
 #             self.config.cli, self.config.predict_host, self.config.predict_port)
-

@@ -8,5 +8,6 @@ build:
     - "numpy"
     - "onnxruntime"
     - "opencv-python"
+  python_sourece: "cn"
 predict:
   port: 8000
