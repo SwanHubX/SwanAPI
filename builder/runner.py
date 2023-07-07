@@ -41,10 +41,10 @@ class SwanConfig:
         self.python_version = self.config_buid["python_version"]
         self.python_packages = self.config_buid["python_packages"]
 
-        if "system_packages" in self.config_buid:
-            self.system_packages = self.config_buid["system_packages"]
+        if "python_sourece" in self.config_buid:
+            self.python_sourece = self.config_buid["python_sourece"]
         else:
-            self.python_server = None
+            self.python_sourece = None
 
         # 获得predict重的信息
         self.config_predict = self.config["predict"]
@@ -126,7 +126,7 @@ RUN apt-get install -y --no-install-recommends {}
         for package in self.config.python_packages:
             pip_packages += package + " "
 
-        if self.config.python_server == "cn":
+        if self.config.python_sourece == "cn":
             pip_packages += " -i " + "https://pypi.tuna.tsinghua.edu.cn/simple"
 
         return """
