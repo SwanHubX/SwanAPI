@@ -145,7 +145,7 @@ COPY . /app
 
 WORKDIR /app
 
-CMD [\"python\", \"{}\"]""".format(self.config.cli)
+CMD [\"python3\", \"{}\"]""".format(self.config.cli)
 
 # CMD [\"python\", \"{}\", \"--host\", \"{}\",  \"--port\", \"{}\"]""".format(
 #             self.config.cli, self.config.predict_host, self.config.predict_port)
