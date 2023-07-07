@@ -1,7 +1,29 @@
-一站式地深度学习推理镜像docker打包工具，需要实现：
+# SwanAPI
 
-- `ImagePack`：本地端一键打包，支持cpu和gpu机器，并暴露API接口
-- `push`： 一键推送到swanhub/API上
-- `pull`：一键拉取swanhub上的Docker镜像
-- `Inference-local`：在python代码中，输入API编号和token，参数local，就可以完成一键拉取、容器检查、推理的过程
-- `Inference-cloud`：在python代码中，输入API编号和token，参数cloud，就可以调用云端API
+快速的机器学习项目变云端/本地端API工具。
+
+**预期功能：**
+
+1. 深度学习镜像一站式打包
+   - 只需编写简单的配置文件和推理文件
+   - 无需烦恼PyTorch、TensorFlow、Transformers等主流的机器学习库的安装
+   - 无需烦恼CUDA、cudnn等GPU环境配置
+   - 镜像运行时将运行一个高性能API服务，轻松调用
+2. 推送镜像实现云托管
+3. 调用[SwanHub](https://swanhub.co/)上的云端API
+4. 在本地生成调试GUI界面与API文档
+
+
+
+## How to use
+
+以下还未上线：
+
+```
+pip install swanapi
+```
+
+
+
+
+
