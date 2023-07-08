@@ -25,7 +25,7 @@ A fast machine learning project [cloud/local] API tool.
 ## Requirements
 
 - Paython3.7+
-- Docker. SwanAPI使用Docker来为你的模型创建容器，在运行SwanAPI之前，你需要[Install Docker](https://docs.docker.com/get-docker/)。
+- Docker. SwanAPI uses Docker to create containers for your models, and before you can run SwanAPI, you need to[Install Docker](https://docs.docker.com/get-docker/)。
 
 SwanAPI stands on the shoulders of giants:
 
@@ -56,9 +56,9 @@ predict:
   port: 8000
 ```
 
-如果你在中国，你可以在build下添加`  python_sourece: "cn"`，将使用清华源来安装python_packages。
+If you are in China, you can add `python_source: "cn"` under build to use Tsinghua mirror to install `python_packages`.
 
-在`predict.py`中定义你的模型如何推理，我们使用与[Gradio](https://github.com/gradio-app/gradio)相似的代码风格：
+In `predict.py`, define how your model performs inference. We use a code style similar to [Gradio](https://github.com/gradio-app/gradio).
 
 ```python
 import cv2
@@ -77,13 +77,13 @@ if __name__ == "__main__":
     api.launch()
 ```
 
-- 2023.7.8:  `v0.1.3`支持`text`, `image`, `number`三种类型
+- 2023.7.8: v0.1.3 supports three types: `text`, `image`, and `number`
 
 ---
 
-现在你可以直接让模型变成预测服务：
+Sure! Here's the translation: "Now you can directly turn the model into a prediction service."
 
-```bash
+```console
 $ python predict.py
  * Serving Flask app "app" (lazy loading)
  * Environment: production
@@ -93,9 +93,9 @@ $ python predict.py
  * Running on http://0.0.0.0:8000/ (Press CTRL+C to quit)
 ```
 
-也可以一行命令构建一个深度学习推理镜像：
+Sure! Here's the translation: "You can also build a deep learning inference image with just one command."
 
-```bash
+```console
 $ swanapi build -t my-dl-model
 --> Building Docker Image...
 --> Building Docker Finish.
@@ -109,7 +109,7 @@ $ swanapi build -t my-dl-model
 
 ---
 
-请求你的服务（以image-to-image任务为例）：
+Request your model inference service (taking image-to-image task as an example):
 
 - Python
 
@@ -128,9 +128,9 @@ curl --location 'http://127.0.0.1:8000/predictions/' \
 --form 'image=@"./test.jpf"'
 ```
 
-得到的json将是：`{"content":"base64"}`
+The obtained JSON will be: {"content":"base64"}
 
-base64解码后即可获得图像文件：
+Once you decode the base64, you will obtain the image file.
 
 ```python
 import base64
