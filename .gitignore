@@ -2,3 +2,6 @@
 __pycache__
 .DS_Store
 Dockerfile
+build
+dist
+swanapi.egg-info
