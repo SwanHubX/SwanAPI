@@ -1,7 +1,7 @@
 from flask import Flask, request
 from typing import Any, Callable, Dict, List, Optional, Type, Union
-from builder.utils import bytes_encoder
-from builder.base_inference import BaseInference
+from .builder.utils import bytes_encoder
+from .builder.base_inference import BaseInference
 import json
 
 app = Flask("app")
@@ -46,7 +46,7 @@ class SwanInference(BaseInference):
                server_name="0.0.0.0",
                port=8000
                ):
-        @app.route("/", methods=["POST", "GET"])
+        @app.route("/predictions/", methods=["POST", "GET"])
         def get_prediction():
             inputs = request.form.to_dict()
             files = request.files

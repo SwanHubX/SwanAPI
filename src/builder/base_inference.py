@@ -1,4 +1,4 @@
-from builder.utils import check_elements_in_list, is_float
+from .utils import check_elements_in_list, is_float
 from typing import Any, Callable, Dict, List, Optional, Type, Union
 import inspect
 import numpy as np

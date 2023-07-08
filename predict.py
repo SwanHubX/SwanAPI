@@ -1,5 +1,5 @@
 import cv2
-from server import SwanInference
+from src.server import SwanInference
 
 
 def predict(image):
@@ -12,6 +12,6 @@ if __name__ == "__main__":
     api = SwanInference()
     api.inference(predict,
                   inputs=['image'],
-                  outputs=['text', 'image', 'number'],
+                  outputs=['image'],
                   description="a simple test")
     api.launch()
