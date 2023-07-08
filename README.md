@@ -12,23 +12,23 @@
 
 A fast machine learning project [cloud/local] API tool.
 
-## Intended function
+
+
+## ⬆️Intended function
 
 1. One-stop packaging of deep learning images
 
-   - Simply write configuration files and inference files
+- Simply write configuration files and inference files
+- No worries about installing mainstream machine learning libraries such as PyTorch, TensorFlow, Transformers, etc.
+- No worries about GPU environment configuration such as CUDA, cudnn, etc.
+- The image runtime will run a high-performance API service for easy invocation.
 
-   - No worries about installing mainstream machine learning libraries such as PyTorch, TensorFlow, Transformers, etc.
+1. Push images for cloud hosting
+2. Generate local debugging GUI interface and API documentation.
 
-   - No worries about GPU environment configuration such as CUDA, cudnn, etc.
 
-   - The image runtime will run a high-performance API service for easy invocation.
 
-2. Push images for cloud hosting
-
-3. Generate local debugging GUI interface and API documentation.
-
-## Requirements
+## 📚Requirements
 
 - Paython3.7+
 - Docker. SwanAPI uses Docker to create containers for your models, and before you can run SwanAPI, you need to[Install Docker](https://docs.docker.com/get-docker/)。
@@ -37,13 +37,17 @@ SwanAPI stands on the shoulders of giants:
 
 - [Flask](https://github.com/pallets/flask) for the web backend
 
-## Install
+
+
+## 🔧Install
 
 ```
 pip install swanapi -i https://pypi.org/simple
 ```
 
-## How it works
+
+
+## 🚀How it works
 
 Define the Docker environment your model runs in with `swan.yaml`:
 
@@ -85,9 +89,11 @@ if __name__ == "__main__":
 
 - 2023.7.8: v0.1.3 supports three types: `text`, `image`, and `number`
 
----
 
-Sure! Here's the translation: "Now you can directly turn the model into a prediction service."
+
+## 💻Server
+
+Now you can directly turn the model into a prediction service.
 
 ```console
 $ python predict.py
@@ -99,7 +105,7 @@ $ python predict.py
  * Running on http://0.0.0.0:8000/ (Press CTRL+C to quit)
 ```
 
-Sure! Here's the translation: "You can also build a deep learning inference image with just one command."
+You can also build a deep learning inference image with just one command.
 
 ```console
 $ swanapi build -t my-dl-model
@@ -117,7 +123,7 @@ $ swanapi build -t my-dl-model
 
 Request your model inference service (taking image-to-image task as an example):
 
-- Python
+- **Python**
 
 ```python
 import requests
@@ -127,12 +133,14 @@ response = requests.request("POST", url, files=files)
 print(response.text)
 ```
 
-- cURL
+- **cURL**
 
 ```bash
 curl --location 'http://127.0.0.1:8000/predictions/' \
 --form 'image=@"./test.jpf"'
 ```
+
+---
 
 The obtained JSON will be: {"content":"base64"}
 
