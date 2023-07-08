@@ -74,7 +74,7 @@ class SwanConfig:
 class DockerfileBuild:
     def __init__(self, configs: SwanConfig):
         self.config = configs
-        self.python_prepackage = ["fastapi[all]"]
+        self.python_prepackage = ["flask"]
 
     def get_dockerfile(self):
         # 根据build中的信息，构建一个Dockerfile

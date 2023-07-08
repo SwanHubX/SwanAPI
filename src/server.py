@@ -1,7 +1,7 @@
 from flask import Flask, request
 from typing import Any, Callable, Dict, List, Optional, Type, Union
-from .builder.utils import bytes_encoder
-from .builder.base_inference import BaseInference
+from .utils import bytes_encoder
+from .base_inference import BaseInference
 import json
 
 app = Flask("app")
