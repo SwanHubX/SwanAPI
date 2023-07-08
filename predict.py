@@ -1,5 +1,5 @@
 import cv2
-from .swanapi.server import SwanInference
+from swanapi import SwanInference
 
 
 def predict(image):
