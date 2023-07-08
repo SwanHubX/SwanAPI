@@ -1,10 +1,9 @@
 import cv2
-from src.server import SwanInference
+from .swanapi.server import SwanInference
 
 
 def predict(image):
-    input_image = image
-    result_image = cv2.cvtColor(input_image, cv2.COLOR_BGR2GRAY)
+    result_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     return result_image
 
 
