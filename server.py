@@ -1,10 +1,7 @@
-import io
-
 from flask import Flask, request, make_response
 from typing import Any, Callable, Dict, List, Optional, Type, Union
 from builder.utils import check_elements_in_list
 import inspect
-from io import BytesIO
 import base64
 import cv2
 import numpy as np
@@ -43,8 +40,8 @@ class SwanInference:
 
     def parameters(self,
                    fn: Callable,
-                   inputs: Union[list, str, None],
-                   outputs: Union[list, str, None]) -> None:
+                   inputs: Union[list, str, None] = None,
+                   outputs: Union[list, str, None] = None) -> None:
         """
         输入推理函数、输入类型、输出类型，设定推理模式
         """
@@ -106,6 +103,7 @@ class SwanInference:
     def prediction(self, **inputs):
         inputs_keys = list(inputs.keys())
         assert check_elements_in_list(inputs_keys, self.param_names)  # 判断请求输入的参数名是否与定义的一致
+
         for iter, (keys, values) in enumerate(inputs.items()):
             assert isinstance(values, self.inputs[iter]), "输入的类型与定义的不一致"
             if isinstance(values, bytes):
@@ -114,11 +112,12 @@ class SwanInference:
             elif isinstance(values, str):
                 inputs[keys] = values
 
-        # TODO: 加个空判断
         result = self.fn(**inputs)
         # 判断返回值类型是否为元组
         if isinstance(result, tuple):
             num_variables = len(result)
+        elif result is None:
+            num_variables = 0
         else:
             num_variables = 1
 
@@ -134,7 +133,7 @@ class SwanInference:
                 assert isinstance(result, str)
             result_json = {"content": result}
         # 如果输出的变量数量>=2
-        else:
+        elif num_variables >= 2:
             result = list(result)
             result_json = {}
             for iter, output in enumerate(self.outputs):
@@ -145,6 +144,8 @@ class SwanInference:
                 elif output == "text":
                     assert isinstance(result[iter], str)
                     result_json[iter] = {"content": result[iter]}
+        else:
+            result_json = {"content": None}
 
         return json.dumps(result_json, default=bytes_encoder)
 
