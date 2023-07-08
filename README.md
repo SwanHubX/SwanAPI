@@ -20,8 +20,7 @@ A fast machine learning project [cloud/local] API tool.
 
 2. Push images for cloud hosting
 
-3. Call cloud APIs on [SwanHub](https://swanhub.co/)
-4. Generate local debugging GUI interface and API documentation.
+3. Generate local debugging GUI interface and API documentation.
 
 ## Requirements
 
