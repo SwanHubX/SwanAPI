@@ -19,22 +19,39 @@ def bytes_encoder(obj):
     raise TypeError("Object of type {} is not JSON serializable".format(type(obj)))
 
 
+def is_float(value):
+    """
+    判断是否为浮点数
+    """
+    try:
+        float(value)
+        return True
+    except ValueError:
+        return False
+
+
 class SwanInference:
     def __init__(self):
         self.mode = "both"  # ["both", "input_only", "output_only"]
-        self.io_types = ["text", "image"]
+        self.io_types = ["text", "image", "number"]
         self.fn = None
         self.inputs = None
         self.outputs = None
         self.signature = None
         self.param_names = None
         self.return_type = None
+        self.TYPES = {
+            "text": str,
+            "image": Union[bytes],
+            "number": Union[int, float],
+        }
 
     def type_reset(self, item):
         """根据输入的类型字符串，替换为对应的类型变量"""
         TYPES = {
             "text": str,
-            "image": bytes
+            "image": Union[bytes],
+            "number": Union[int, float],
         }
         return TYPES[item]
 
@@ -84,7 +101,7 @@ class SwanInference:
             assert check_elements_in_list(outputs, self.io_types)
 
         # 类型转换: 将输入、输出的类型转换为对应的类型变量
-        self.inputs = [self.type_reset(input) for input in inputs]
+        self.inputs = [self.TYPES[input] for input in inputs]
         self.outputs = outputs
 
         # 得到fn函数的签名信息
@@ -104,13 +121,20 @@ class SwanInference:
         inputs_keys = list(inputs.keys())
         assert check_elements_in_list(inputs_keys, self.param_names)  # 判断请求输入的参数名是否与定义的一致
 
+        # 根据post输入类型，做相应的转换
         for iter, (keys, values) in enumerate(inputs.items()):
-            assert isinstance(values, self.inputs[iter]), "输入的类型与定义的不一致"
-            if isinstance(values, bytes):
-                print(type(values))
+            # 对于输入的类型为number的情况
+            if self.inputs[iter] == self.TYPES["number"]:
+                assert is_float(values), "输入的类型与定义的number类型不一致"
+                inputs[keys] = float(values)
+            # 对于输入的类型为image的情况
+            elif type(values) == self.TYPES["image"]:
                 inputs[keys] = cv2.imdecode(np.frombuffer(values, np.uint8), cv2.IMREAD_UNCHANGED)
-            elif isinstance(values, str):
+            # 对于输入的类型为text的情况
+            elif type(values) == self.TYPES["text"]:
                 inputs[keys] = values
+            else:
+                assert isinstance(values, self.inputs[iter]), "输入的类型与定义的不一致"
 
         result = self.fn(**inputs)
         # 判断返回值类型是否为元组
@@ -131,6 +155,8 @@ class SwanInference:
                 result = base64.b64encode(result)
             elif self.outputs == ["text"]:
                 assert isinstance(result, str)
+            elif self.outputs == ["number"]:
+                assert isinstance(result, (int, float))
             result_json = {"content": result}
         # 如果输出的变量数量>=2
         elif num_variables >= 2:
@@ -144,12 +170,18 @@ class SwanInference:
                 elif output == "text":
                     assert isinstance(result[iter], str)
                     result_json[iter] = {"content": result[iter]}
+                elif output == "number":
+                    assert isinstance(result[iter], (int, float))
+                    result_json[iter] = {"content": result[iter]}
         else:
             result_json = {"content": None}
 
         return json.dumps(result_json, default=bytes_encoder)
 
-    def launch(self, server_name="0.0.0.0", port=8000):
+    def launch(self,
+               server_name="0.0.0.0",
+               port=8000
+               ):
         """
         用户的在API端的输入假设是["text", "image"]
         """
