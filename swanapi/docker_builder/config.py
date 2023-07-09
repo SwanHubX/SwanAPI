@@ -87,17 +87,17 @@ class SwanYaml:
                 raise TypeError("[Error] 'python_packages' in swan.yaml is not list")
             self.python_packages = value
         else:
-            self.python_packages = None
+            self.python_packages = []
 
     def build_python_sourece_typecheck(self) -> None:
         PYTHON_SOURCE_LIST = ["cn", "us"]
         PYTHON_SOURCE_DEFAULT = 'us'
-        if 'python_sourece' in self.config_buid:
-            self.python_sourece = self.config_buid["python_sourece"]
-            if self.python_sourece not in PYTHON_SOURCE_LIST:
-                raise ValueError("[Error] 'python_sourece' in swan.yaml is not in {}".format(PYTHON_SOURCE_LIST))
+        if 'python_source' in self.config_buid:
+            self.python_source = self.config_buid["python_source"]
+            if self.python_source not in PYTHON_SOURCE_LIST:
+                raise ValueError("[Error] 'python_source' in swan.yaml is not in {}".format(PYTHON_SOURCE_LIST))
         else:
-            self.python_sourece = PYTHON_SOURCE_DEFAULT
+            self.python_source = PYTHON_SOURCE_DEFAULT
 
     def predict_port_typecheck(self) -> None:
         if 'port' in self.config_predict:

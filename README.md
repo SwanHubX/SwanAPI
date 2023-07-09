@@ -113,7 +113,7 @@ $ python predict.py
 还可以一个命令构建深度学习推理图像，后台将根据`swan.yaml`配置好一切：
 
 ```console
-$ swanapi build -r -t my-dl-model
+$ swan build -r -t my-dl-model
 --> Building Docker Image...
 --> Building Docker Finish.
  * Serving Flask app "app" (lazy loading)
@@ -137,7 +137,7 @@ import requests
 url = "http://127.0.0.1:8000/predictions/"
 files = [('image', ('test.jpg', open('./test.jpg', 'rb'), 'image/jpeg'))]
 response = requests.request("POST", url, files=files)
-print(response.text)
+print(response.json())
 ```
 
 你将会收到一个图像编码为base64的Json输出: `{"content":"base64"}`，解码base64后，您将获得图像文件：
@@ -147,8 +147,8 @@ import base64
 import numpy as np
 import cv2
 
-image_base64 = response.text['content']
-nparr = np.fromstring(base64.b64decode(image_base64), np.uint8)
+image_base64 = response.json()['content']
+nparr = np.frombuffer(base64.b64decode(image_base64), np.uint8)
 img_restore = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 cv2.imwrite("output.jpg", img_restore)
 ```

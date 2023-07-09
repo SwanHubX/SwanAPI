@@ -22,7 +22,7 @@ class DockerfileBuild:
         elif self.config.python_version == "3.8" or self.config.python_version == "3.9":
             return "FROM ubuntu:20.04\n"
         else:
-            raise TypeError("[Error] The current version of swanapi only supports 3.10")
+            raise TypeError("[Error] The current version of swanapi only supports [3.8, 3.9, 3.10]")
 
     def get_preoperation(self):
         apt_preoperation = """
@@ -38,9 +38,15 @@ RUN apt-get install -y python3 curl && \
 """
         else:
             python_packages_preoperation = f"""
-RUN apt-get update && \
+RUN apt-get update && \  
     apt-get install -y python{self.config.python_version} python3-pip
-            """
+"""
+
+        # 如果是国内源，需要设置pip清华源
+        if self.config.python_source == "cn":
+            python_packages_preoperation += """
+RUN pip3 config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
+"""
 
         return apt_preoperation + python_packages_preoperation
 
@@ -51,23 +57,31 @@ RUN apt-get update && \
                 apt_packages += package + " "
             return """
 RUN apt-get install -y --no-install-recommends {}
-    """.format(apt_packages)
+""".format(apt_packages)
         else:
-            """"""
+            return ""
 
     def get_python_packages(self, prepackages):
-        pip_packages = ""
-        for prepackage in prepackages:
-            pip_packages += prepackage + " "
-        for package in self.config.python_packages:
-            pip_packages += package + " "
+        prepackages_text = ""
+        package_text = ""
 
-        if self.config.python_sourece == "cn":
-            pip_packages += " -i " + "https://pypi.tuna.tsinghua.edu.cn/simple"
+        if len(prepackages) == 0 and len(self.config.python_packages) == 0:
+            return ""
+        if len(prepackages) != 0:
+            for prepackage in prepackages:
+                prepackages_text += " pip3 install --no-cache-dir {} ".format(prepackage)
+                if prepackage != prepackages[-1]:
+                    prepackages_text += "&& \ \n   "
+            prepackages_text = "RUN" + prepackages_text
 
-        return """
-RUN pip3 install --no-cache-dir {}
-""".format(pip_packages)
+        if len(self.config.python_packages) != 0:
+            for package in self.config.python_packages:
+                package_text += " pip3 install --no-cache-dir {} ".format(package)
+                if package != self.config.python_packages[-1]:
+                    package_text += "&& \ \n   "
+            package_text = "RUN" + package_text
+
+        return prepackages_text + "\n" + package_text + "\n"
 
     def get_clean(self):
         return """
