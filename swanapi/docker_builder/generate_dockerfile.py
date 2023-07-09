@@ -56,7 +56,7 @@ RUN pip3 config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
             for package in self.config.system_packages:
                 apt_packages += package + " "
             return """
-RUN apt-get install -y --no-install-recommends {}
+RUN apt-get install -y --no-install-recommends {} \n
 """.format(apt_packages)
         else:
             return ""
@@ -72,16 +72,16 @@ RUN apt-get install -y --no-install-recommends {}
                 prepackages_text += " pip3 install --no-cache-dir {} ".format(prepackage)
                 if prepackage != prepackages[-1]:
                     prepackages_text += "&& \ \n   "
-            prepackages_text = "RUN" + prepackages_text
+            prepackages_text = "RUN" + prepackages_text + "\n"
 
         if len(self.config.python_packages) != 0:
             for package in self.config.python_packages:
                 package_text += " pip3 install --no-cache-dir {} ".format(package)
                 if package != self.config.python_packages[-1]:
                     package_text += "&& \ \n   "
-            package_text = "RUN" + package_text
+            package_text = "RUN" + package_text + '\n'
 
-        return prepackages_text + "\n" + package_text + "\n"
+        return prepackages_text + '\n' + package_text
 
     def get_clean(self):
         return """
