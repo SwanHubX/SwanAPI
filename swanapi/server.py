@@ -13,13 +13,14 @@ class SwanInference(BaseInference):
 
     def inference(self,
                   fn: Callable,
-                  inputs: Union[list[str], str, None],
-                  outputs: Union[list[str], str, None],
-                  description: str
+                  inputs: Union[list[str], str, None] = None,
+                  outputs: Union[list[str], str, None] = None,
+                  description: str = None
                   ) -> None:
         self.fn = fn
         self.inputs = inputs
         self.outputs = outputs
+        self.description = description
 
         # 检查fn、inputs和outputs的类型是否符合规范
         self.inference_type_checker()

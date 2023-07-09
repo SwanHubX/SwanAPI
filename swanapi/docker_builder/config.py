@@ -72,7 +72,10 @@ class SwanYaml:
             self.system_packages = None
 
     def build_python_version_typecheck(self) -> None:
+        PYTHON_VERSION_LIST = ["3.8", "3.9", "3.10"]
         if 'python_version' in self.config_buid:
+            assert self.config_buid["python_version"] in PYTHON_VERSION_LIST,\
+                "[Error] 'python_version' in swan.yaml is not in {}".format(PYTHON_VERSION_LIST)
             self.python_version = self.config_buid["python_version"]
         else:
             self.python_version = "3.10"

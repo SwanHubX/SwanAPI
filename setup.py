@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='swanapi',
-    version='0.1.5',
+    version='0.1.6',
     author='ZeYiLin',
     author_email='zeyi.lin@swanhub.co',
     description='A low threshold, high performance, compatible with a variety of different scenarios of'
@@ -14,5 +14,5 @@ setup(
         'opencv-python',
         'numpy',
     ],
-    entry_points={"console_scripts": ["swanapi=swanapi.make_build:build"]}
+    entry_points={"console_scripts": ["swan=swanapi.make_build:build"]}
 )

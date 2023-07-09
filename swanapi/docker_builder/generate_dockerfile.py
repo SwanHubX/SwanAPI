@@ -19,8 +19,9 @@ class DockerfileBuild:
     def get_FORM(self):
         if self.config.python_version == "3.10":
             return "FROM ubuntu:22.04\n"
+        elif self.config.python_version == "3.8" or self.config.python_version == "3.9":
+            return "FROM ubuntu:20.04\n"
         else:
-            # return "FROM ubuntu:20.04\n"
             raise TypeError("[Error] The current version of swanapi only supports 3.10")
 
     def get_preoperation(self):
@@ -28,12 +29,19 @@ class DockerfileBuild:
 RUN apt-get clean  && \ 
     apt-get update
 """
-        python_packages_preoperation = """
+        if self.config.python_version == "3.10":
+            python_packages_preoperation = """
 RUN apt-get install -y python3 curl && \ 
     curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py  && \ 
     python3 get-pip.py && \ 
     pip3 install -U pip
 """
+        else:
+            python_packages_preoperation = f"""
+RUN apt-get update && \
+    apt-get install -y python{self.config.python_version} python3-pip
+            """
+
         return apt_preoperation + python_packages_preoperation
 
     def get_apt_packages(self):
