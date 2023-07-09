@@ -4,7 +4,7 @@ from .utils import bytes_encoder
 from .base_inference import BaseInference
 import json
 
-app = Flask("app")
+app = Flask("SwanAPI Server")
 
 
 class SwanInference(BaseInference):

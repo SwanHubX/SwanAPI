@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='swanapi',
-    version='0.1.3',
+    version='0.1.4',
     author='ZeYiLin',
     author_email='zeyi.lin@swanhub.co',
     description='A low threshold, high performance, compatible with a variety of different scenarios of'
