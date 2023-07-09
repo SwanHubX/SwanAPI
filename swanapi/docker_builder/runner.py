@@ -1,14 +1,15 @@
 import os
 import subprocess
-from config import SwanYaml
-from generate_dockerfile import DockerfileBuild
+from .config import SwanYaml
+from .generate_dockerfile import DockerfileBuild
 
 
 class Runner:
     """
     SwanAPI深度学习镜像构建的入口类
     """
-    def __init__(self, config_filename: str):
+
+    def __init__(self, config_filename: str = "swan.yaml"):
         self.config = SwanYaml(config_filename)
         self.dockerfile = DockerfileBuild(self.config).get_dockerfile()
 
@@ -38,7 +39,3 @@ class Runner:
         if running:
             subprocess.run(["docker", "run", "-p", f"{self.config.predict_port}:{self.config.predict_port}",
                             "{}".format(image_name)])
-
-
-
-

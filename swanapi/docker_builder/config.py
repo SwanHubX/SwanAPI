@@ -57,7 +57,7 @@ class SwanYaml:
     def build_gpu_typecheck(self) -> None:
         GPU_LIST = ['false', 'true']
         GPU_DEFAULT = "false"
-        if self.config_buid["gpu"]:
+        if 'gpu' in self.config_buid:
             if str(self.config_buid["gpu"]).lower() not in GPU_LIST:
                 raise TypeError("[Error] 'gpu' in swan.yaml is not bool")
             else:
@@ -66,19 +66,19 @@ class SwanYaml:
             self.gpu = GPU_DEFAULT
 
     def build_system_packages_typecheck(self) -> None:
-        if self.config_buid["system_packages"]:
+        if 'system_packages' in self.config_buid:
             self.system_packages = self.config_buid["system_packages"]
         else:
             self.system_packages = None
 
     def build_python_version_typecheck(self) -> None:
-        if self.config_buid["python_version"]:
+        if 'python_version' in self.config_buid:
             self.python_version = self.config_buid["python_version"]
         else:
             self.python_version = "3.10"
 
     def build_python_packages_typecheck(self) -> None:
-        if self.config_buid["python_packages"]:
+        if 'python_packages' in self.config_buid:
             value = self.config_buid["python_packages"]
             if not isinstance(value, list):
                 raise TypeError("[Error] 'python_packages' in swan.yaml is not list")
@@ -89,7 +89,7 @@ class SwanYaml:
     def build_python_sourece_typecheck(self) -> None:
         PYTHON_SOURCE_LIST = ["cn", "us"]
         PYTHON_SOURCE_DEFAULT = 'us'
-        if self.config_buid["python_sourece"]:
+        if 'python_sourece' in self.config_buid:
             self.python_sourece = self.config_buid["python_sourece"]
             if self.python_sourece not in PYTHON_SOURCE_LIST:
                 raise ValueError("[Error] 'python_sourece' in swan.yaml is not in {}".format(PYTHON_SOURCE_LIST))
@@ -97,7 +97,7 @@ class SwanYaml:
             self.python_sourece = PYTHON_SOURCE_DEFAULT
 
     def predict_port_typecheck(self) -> None:
-        if self.config_predict["port"]:
+        if 'port' in self.config_predict:
             if not isinstance(self.config_predict["port"], int):
                 raise TypeError("[Error] 'port' in swan.yaml is not int")
             self.predict_port = self.config_predict["port"]

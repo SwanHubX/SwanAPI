@@ -1,4 +1,4 @@
-from config import SwanYaml
+from .config import SwanYaml
 
 
 class DockerfileBuild:
