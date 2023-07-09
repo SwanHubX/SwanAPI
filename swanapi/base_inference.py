@@ -17,13 +17,12 @@ class BaseInference:
         self.fn_param_names = None
         self.TYPES = {
             "text": str,
-            "image": Union[bytes],
+            "image": Union[bytes, str],
             "number": Union[int, float],
             "list": list,
             "dict": dict,
         }
         self.types_list = list(self.TYPES.keys())
-        self.inputs_typing = None
         self.outputs_typing = None
         self.prediction_inputs = None
         self.prediction_inputs_keys = None
@@ -66,8 +65,6 @@ class BaseInference:
         else:
             assert check_elements_in_list(self.outputs, self.types_list)
 
-        self.inputs_typing = [self.TYPES[input_item] for input_item in self.inputs]
-
     def get_fn_information(self) -> None:
         # 得到fn函数的签名信息
         self.signature = inspect.signature(self.fn)
@@ -88,10 +85,15 @@ class BaseInference:
         # 根据post输入类型，做相应的转换
         for iter, (keys, values) in enumerate(self.prediction_inputs.items()):
             # 对于输入的类型为image的情况
-            # self.inputs[iter] = 'image'
             if self.inputs[iter] == "image":
-                assert isinstance(values, bytes), "输入的类型与定义的image类型不一致"
-                self.prediction_inputs[keys] = cv2.imdecode(np.frombuffer(values, np.uint8), cv2.IMREAD_UNCHANGED)
+                if isinstance(values, bytes):
+                    self.prediction_inputs[keys] = cv2.imdecode(np.frombuffer(values, np.uint8), cv2.IMREAD_UNCHANGED)
+                # 如果输入的是字符串，则作为图像路径处理
+                elif isinstance(values, str):
+                    self.prediction_inputs[keys] = cv2.imread(values, cv2.IMREAD_UNCHANGED)
+                else:
+                    raise TypeError("输入的类型与定义的image类型不一致")
+
             # 对于输入的类型为number的情况
             elif self.inputs[iter] == "number":
                 assert is_float(values), "输入的类型与定义的number类型不一致"
@@ -104,7 +106,7 @@ class BaseInference:
             elif self.inputs[iter] == "list":
                 self.prediction_inputs[keys] = is_list(values)
             # 对于输入的类型为dict的情况
-            elif self.inputs_typing[iter] == self.TYPES["dict"]:
+            elif self.inputs[iter] == self.TYPES["dict"]:
                 self.prediction_inputs[keys] = is_dict(values)
             else:
                 raise TypeError("输入的类型与定义的不一致")
