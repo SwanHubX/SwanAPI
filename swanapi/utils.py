@@ -24,3 +24,22 @@ def is_float(value):
         return True
     except ValueError:
         return False
+
+
+def is_list(value):
+    """
+    判断是否为列表，并返回转为后的字典
+    """
+    list_obj = eval(value)
+    assert isinstance(list_obj, list), "输入的类型与定义的list类型不一致"
+    return list_obj
+
+
+def is_dict(value):
+    """
+    判断是否为字典，并返回转为后的字典
+    """
+    dict_obj = eval(value)
+    print(dict_obj, type(dict_obj))
+    assert isinstance(dict_obj, dict), "输入的类型与定义的dict类型不一致"
+    return dict_obj

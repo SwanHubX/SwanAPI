@@ -1,4 +1,4 @@
-from .utils import check_elements_in_list, is_float
+from .utils import check_elements_in_list, is_float, is_list, is_dict
 from typing import Any, Callable, Dict, List, Optional, Type, Union
 import inspect
 import numpy as np
@@ -8,9 +8,8 @@ import base64
 
 class BaseInference:
     def __init__(self):
-        # self.model's options - ["both", "input_only", "output_only"]
+        # self.mode's options - ["both", "input_only", "output_only"]
         self.mode = "both"
-        self.io_types = ["text", "image", "number"]
         self.fn = None
         self.inputs = None
         self.outputs = None
@@ -20,7 +19,10 @@ class BaseInference:
             "text": str,
             "image": Union[bytes],
             "number": Union[int, float],
+            "list": list,
+            "dict": dict,
         }
+        self.types_list = list(self.TYPES.keys())
         self.inputs_typing = None
         self.outputs_typing = None
         self.prediction_inputs = None
@@ -57,14 +59,14 @@ class BaseInference:
 
         # 类型检查: 输入的类型是否在io_types中
         if self.mode == "both":
-            assert check_elements_in_list(self.inputs, self.io_types)
-            assert check_elements_in_list(self.outputs, self.io_types)
+            assert check_elements_in_list(self.inputs, self.types_list)
+            assert check_elements_in_list(self.outputs, self.types_list)
         elif self.mode == "input_only":
-            assert check_elements_in_list(self.inputs, self.io_types)
+            assert check_elements_in_list(self.inputs, self.types_list)
         else:
-            assert check_elements_in_list(self.outputs, self.io_types)
+            assert check_elements_in_list(self.outputs, self.types_list)
 
-        self.inputs_typing = [self.TYPES[input] for input in self.inputs]
+        self.inputs_typing = [self.TYPES[input_item] for input_item in self.inputs]
 
     def get_fn_information(self) -> None:
         # 得到fn函数的签名信息
@@ -85,18 +87,27 @@ class BaseInference:
     def prediction_input_converter(self) -> None:
         # 根据post输入类型，做相应的转换
         for iter, (keys, values) in enumerate(self.prediction_inputs.items()):
+            # 对于输入的类型为image的情况
+            # self.inputs[iter] = 'image'
+            if self.inputs[iter] == "image":
+                assert isinstance(values, bytes), "输入的类型与定义的image类型不一致"
+                self.prediction_inputs[keys] = cv2.imdecode(np.frombuffer(values, np.uint8), cv2.IMREAD_UNCHANGED)
             # 对于输入的类型为number的情况
-            if self.inputs[iter] == self.TYPES["number"]:
+            elif self.inputs[iter] == "number":
                 assert is_float(values), "输入的类型与定义的number类型不一致"
                 self.prediction_inputs[keys] = float(values)
-            # 对于输入的类型为image的情况
-            elif type(values) == self.TYPES["image"]:
-                self.prediction_inputs[keys] = cv2.imdecode(np.frombuffer(values, np.uint8), cv2.IMREAD_UNCHANGED)
             # 对于输入的类型为text的情况
-            elif type(values) == self.TYPES["text"]:
+            elif self.inputs[iter] == "text":
+                assert isinstance(values, str), "输入的类型与定义的text类型不一致"
                 self.prediction_inputs[keys] = values
+            # 对于输入的类型为list的情况
+            elif self.inputs[iter] == "list":
+                self.prediction_inputs[keys] = is_list(values)
+            # 对于输入的类型为dict的情况
+            elif self.inputs_typing[iter] == self.TYPES["dict"]:
+                self.prediction_inputs[keys] = is_dict(values)
             else:
-                assert isinstance(values, self.inputs[iter]), "输入的类型与定义的不一致"
+                raise TypeError("输入的类型与定义的不一致")
 
     def prediction_output_type_checker(self, result: Any) -> None:
         # 判断返回值类型是否为元组
@@ -120,6 +131,10 @@ class BaseInference:
                 assert isinstance(result, str)
             elif self.outputs == ["number"]:
                 assert isinstance(result, (int, float))
+            elif self.outputs == ["dict"]:
+                assert isinstance(result, dict)
+            elif self.outputs == ["list"]:
+                assert isinstance(result, list)
             result_json = {"content": result}
         # 如果输出的变量数量>=2
         elif self.prediction_output_num_variables >= 2:
@@ -135,6 +150,12 @@ class BaseInference:
                     result_json[iter] = {"content": result[iter]}
                 elif output == "number":
                     assert isinstance(result[iter], (int, float))
+                    result_json[iter] = {"content": result[iter]}
+                elif self.outputs == ["dict"]:
+                    assert isinstance(result, dict)
+                    result_json[iter] = {"content": result[iter]}
+                elif self.outputs == ["list"]:
+                    assert isinstance(result, list)
                     result_json[iter] = {"content": result[iter]}
         else:
             result_json = {"content": None}

@@ -1,16 +1,18 @@
-import cv2
 from swanapi import SwanInference
+import gradio as gr
 
 
-def predict(image):
-    result_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    return result_image
+def predict(test_dict):
+    output_dict = {"a": test_dict[0], "b": 2, "c": 3}
+    return output_dict
 
 
 if __name__ == "__main__":
     api = SwanInference()
     api.inference(predict,
-                  inputs=['image'],
-                  outputs=['image'],
+                  inputs=['list'],
+                  outputs=['dict'],
                   description="a simple test")
     api.launch()
+
+    demo = gr.Interface()

@@ -12,14 +12,11 @@ class SwanInference(BaseInference):
         super().__init__()
 
     def inference(self,
-                   fn: Callable,
-                   inputs: Union[list, str, None] = None,
-                   outputs: Union[list, str, None] = None,
-                   description: str = None
-                   ) -> None:
-        """
-        输入推理函数、输入类型、输出类型，设定推理模式
-        """
+                  fn: Callable,
+                  inputs: Union[list[str], str, None],
+                  outputs: Union[list[str], str, None],
+                  description: str
+                  ) -> None:
         self.fn = fn
         self.inputs = inputs
         self.outputs = outputs
