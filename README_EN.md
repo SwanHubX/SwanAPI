@@ -4,7 +4,6 @@
 
 
 
-
 <div align="center">
   <a href="https://pypi.org/project/swanapi" target="_blank">
     <img src="https://img.shields.io/pypi/v/swanapi?color=%2334D058&label=pypi%20package" alt="Package version"></a>
@@ -12,35 +11,32 @@
     <img src="https://img.shields.io/pypi/pyversions/fastapi.svg?color=%2334D058" alt="Supported Python versions">
 </a>
 </div>
+<span style="text-align:center; display:inline-block; width:100%">A fast machine learning project [cloud/local] API tool.</span>
 
-<span style="text-align:center; display:inline-block; width:100%">🤖️机器学习项目三行代码变API</span>
+<span style="text-align:center; display:inline-block; width:100%">[中文文档](README.md)</span>
 
-<span style="text-align:center; display:inline-block; width:100%">[English](README_EN.md)</span>
+## ⬆️Intended function
 
-## ⬆️预期功能（全力迭代中）
+1. One-stop packaging of deep learning images
 
-1. 三行代码生成高性能API
+- Simply write configuration files and inference files
+- No worries about installing mainstream machine learning libraries such as PyTorch, TensorFlow, Transformers, etc.
+- No worries about GPU environment configuration such as CUDA, cudnn, etc.
+- The image runtime will run a high-performance API service for easy invocation.
 
-2. 轻松打包机器学习API镜像
-
-   - 轻松：仅需增加极少量的代码
-
-   - 打包：无需担心CUDA、cudnn等GPU环境与PyTorch、TensorFlow等机器学习库配置，一键式打包搞定
-
-3. 快速理解与调试：自动创建API文档与调试GUI
-
-4. 调用云端API
+1. Push images for cloud hosting
+2. Generate local debugging GUI interface and API documentation.
 
 
 
-## 📚依赖
+## 📚Requirements
 
 - Paython3.7+
-- Docker. SwanAPI使用Docker来为你的模型创建容器, 在你运行SwanAPI的镜像打包功能之前, 你需要[安装Docker](https://docs.docker.com/get-docker/)。
+- Docker. SwanAPI uses Docker to create containers for your models, and before you can run SwanAPI, you need to[Install Docker](https://docs.docker.com/get-docker/)。
 
 
 
-## 🔧安装
+## 🔧Install
 
 ```
 pip install swanapi -i https://pypi.org/simple
@@ -48,9 +44,9 @@ pip install swanapi -i https://pypi.org/simple
 
 
 
-## 💻准备
+## 🚀How it works
 
-1⃣️ 在 `swan.yaml`中，定义模型运行的Docker环境：
+Define the Docker environment your model runs in with `swan.yaml`:
 
 ```yaml
 build:
@@ -67,41 +63,38 @@ predict:
   port: 8000
 ```
 
-ps：如果你在中国, 可以在build下添加 `python_source: "cn"`以使用清华源安装 `python_packages`.
+If you are in China, you can add `python_source: "cn"` under build to use Tsinghua mirror to install `python_packages`.
 
-
-
-2⃣️ 在 `predict.py`中, 定义你的模型推理方式。 😄我们使用[Gradio](https://github.com/gradio-app/gradio)的代码风格：
+In `predict.py`, define how your model performs inference. We use a code style similar to [Gradio](https://github.com/gradio-app/gradio).
 
 ```python
-from swanapi import SwanInference
 import cv2
+from swanapi import SwanInference
 
-# 这是一个简单的图像转黑白的任务
 def predict(image):
     result_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    return "success", result_image
+    return result_image
 
 if __name__ == "__main__":
     api = SwanInference()
     api.inference(predict,
                   inputs=['image'],
-                  outputs=['text', 'image'],
+                  outputs=['image'],
                   description="a simple test")
     api.launch()
 ```
 
-`inputs`和`outputs`支持["text", "image", "number", "list", "dict"]五种类型
+- 2023.7.8: v0.1.3 supports three types: `text`, `image`, and `number`
 
 
 
-## 🚀运行
+## 💻Server
 
-现在你可以直接将模型转换为预测服务：
+Now you can directly turn the model into a prediction service.
 
 ```console
 $ python predict.py
- * Serving Flask app "SwanAPI Server" (lazy loading)
+ * Serving Flask app "app" (lazy loading)
  * Environment: production
    WARNING: This is a development server. Do not use it in a production deployment.
    Use a production WSGI server instead.
@@ -109,10 +102,10 @@ $ python predict.py
  * Running on http://0.0.0.0:8000/ (Press CTRL+C to quit)
 ```
 
-还可以一个命令构建深度学习推理图像，后台将根据`swan.yaml`配置好一切：
+You can also build a deep learning inference image with just one command.
 
 ```console
-$ swanapi build -r -t my-dl-model
+$ swanapi build -t my-dl-model
 --> Building Docker Image...
 --> Building Docker Finish.
  * Serving Flask app "app" (lazy loading)
@@ -123,11 +116,9 @@ $ swanapi build -r -t my-dl-model
  * Running on http://0.0.0.0:8000/ (Press CTRL+C to quit)
 ```
 
+---
 
-
-## 🚢调用
-
-请求运行好的模型推理服务(以image-to-image任务为例):
+Request your model inference service (taking image-to-image task as an example):
 
 - **Python**
 
@@ -139,7 +130,18 @@ response = requests.request("POST", url, files=files)
 print(response.text)
 ```
 
-你将会收到一个图像编码为base64的Json输出: `{"content":"base64"}`，解码base64后，您将获得图像文件：
+- **cURL**
+
+```bash
+curl --location 'http://127.0.0.1:8000/predictions/' \
+--form 'image=@"./test.jpf"'
+```
+
+---
+
+The obtained JSON will be: {"content":"base64"}
+
+Once you decode the base64, you will obtain the image file.
 
 ```python
 import base64
@@ -149,17 +151,5 @@ import cv2
 image_base64 = response.text['content']
 nparr = np.fromstring(base64.b64decode(image_base64), np.uint8)
 img_restore = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-cv2.imwrite("output.jpg", img_restore)
-```
-
----
-
-其他调用方式：
-
-- **cURL**
-
-```bash
-curl --location 'http://127.0.0.1:8000/predictions/' \
---form 'image=@"./test.jpg"'
 ```
 
