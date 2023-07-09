@@ -72,42 +72,48 @@ class BaseInference:
         # 得到fn函数的参数名
         self.fn_param_names = [param for param in self.signature.parameters]
 
-        # 判断输入的数量是否与定义的一致
-        assert len(self.fn_param_names) == len(self.inputs), ValueError("输入的数量与定义的不一致")
+        # 判断inputs的数量大于fn定义的数量
+        if len(self.fn_param_names) < len(self.inputs):
+            raise ValueError("inputs长度不应该大于函数的参数个数")
+        else:
+            self.fn_param_names = self.fn_param_names[: len(self.inputs)]
 
     def prediction_input_type_checker(self, inputs: Dict[str, Any]) -> None:
+        # 对于网络请求的输入进行检查
         self.prediction_inputs = inputs
-
         self.prediction_inputs_keys = list(self.prediction_inputs.keys())
-        assert check_elements_in_list(self.prediction_inputs_keys, self.fn_param_names)  # 判断请求输入的参数名是否与定义的一致
+        assert len(self.prediction_inputs_keys) == len(self.inputs), "请求传入的参数数量与inputs定义的不一致"
+        assert check_elements_in_list(self.prediction_inputs_keys, self.fn_param_names), "请求传入的参数key与fn定义的不一致"
 
     def prediction_input_converter(self) -> None:
         # 根据post输入类型，做相应的转换
-        for iter, (keys, values) in enumerate(self.prediction_inputs.items()):
+        for iter, param_name in enumerate(self.fn_param_names):
+            # param_name : 'input_image', 'custom_size_height', 'custom_size_width'
+            values = self.prediction_inputs[param_name]
             # 对于输入的类型为image的情况
             if self.inputs[iter] == "image":
                 if isinstance(values, bytes):
-                    self.prediction_inputs[keys] = cv2.imdecode(np.frombuffer(values, np.uint8), cv2.IMREAD_UNCHANGED)
+                    self.prediction_inputs[param_name] = cv2.imdecode(np.frombuffer(values, np.uint8), cv2.IMREAD_UNCHANGED)
                 # 如果输入的是字符串，则作为图像路径处理
                 elif isinstance(values, str):
-                    self.prediction_inputs[keys] = cv2.imread(values, cv2.IMREAD_UNCHANGED)
+                    self.prediction_inputs[param_name] = cv2.imread(values, cv2.IMREAD_UNCHANGED)
                 else:
                     raise TypeError("输入的类型与定义的image类型不一致")
 
             # 对于输入的类型为number的情况
             elif self.inputs[iter] == "number":
                 assert is_float(values), "输入的类型与定义的number类型不一致"
-                self.prediction_inputs[keys] = float(values)
+                self.prediction_inputs[param_name] = float(values)
             # 对于输入的类型为text的情况
             elif self.inputs[iter] == "text":
                 assert isinstance(values, str), "输入的类型与定义的text类型不一致"
-                self.prediction_inputs[keys] = values
+                self.prediction_inputs[param_name] = values
             # 对于输入的类型为list的情况
             elif self.inputs[iter] == "list":
-                self.prediction_inputs[keys] = is_list(values)
+                self.prediction_inputs[param_name] = is_list(values)
             # 对于输入的类型为dict的情况
             elif self.inputs[iter] == self.TYPES["dict"]:
-                self.prediction_inputs[keys] = is_dict(values)
+                self.prediction_inputs[param_name] = is_dict(values)
             else:
                 raise TypeError("输入的类型与定义的不一致")
 
@@ -125,7 +131,9 @@ class BaseInference:
     def prediction_output_converter(self, result: Any) -> Dict[str, Any]:
         # 如果输出的变量数量1
         if self.prediction_output_num_variables == 1:
-            if self.outputs == ["image"]:
+            if result is None:
+                result = None
+            elif self.outputs == ["image"]:
                 assert isinstance(result, np.ndarray)
                 result = cv2.imencode(".jpg", result)[1].tostring()
                 result = base64.b64encode(result)
@@ -143,7 +151,9 @@ class BaseInference:
             result = list(result)
             result_json = {}
             for iter, output in enumerate(self.outputs):
-                if output == "image":
+                if result[iter] is None:
+                    result_json[iter] = {"content": None}
+                elif output == "image":
                     assert isinstance(result[iter], np.ndarray)
                     result[iter] = cv2.imencode(".jpg", result[iter])[1].tostring()
                     result_json[iter] = {"content": base64.b64encode(result[iter])}
