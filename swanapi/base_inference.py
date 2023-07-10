@@ -39,7 +39,7 @@ class BaseInference:
             )
 
         # 如果输入、输出定义为None或空列表，报错
-        if (self.backbone_inputs is None or self.backbone_inputs == []) and\
+        if (self.backbone_inputs is None or self.backbone_inputs == []) and \
                 (self.backbone_outputs is None or self.backbone_outputs == []):
             raise ValueError("Must provide at least one of `inputs` or `outputs`")
         # 如果输出为空，但是输入不为空
@@ -107,8 +107,10 @@ class BaseInference:
             # 对于输入的类型为image的情况
             if self.backbone_inputs[iter] == "image":
                 if isinstance(values, bytes):
+
                     self.requests_inputs[param_name] = \
-                        cv2.imdecode(np.frombuffer(values, np.uint8), cv2.IMREAD_UNCHANGED)
+                        cv2.cvtColor(cv2.imdecode(np.frombuffer(values, np.uint8), cv2.IMREAD_COLOR),
+                                     cv2.COLOR_RGB2BGR)
                 # 如果输入的是字符串，则作为图像路径处理
                 elif isinstance(values, str):
                     self.requests_inputs[param_name] = cv2.imread(values, cv2.IMREAD_UNCHANGED)
@@ -148,14 +150,20 @@ class BaseInference:
 
         assert self.requests_outputs_variables_num == len(self.backbone_outputs), "fn输出的数量与outputs定义的不一致"
 
-    def requests_output_converter(self, result: Any) -> Dict[str, Any]:
-        result = list(result)
+    def requests_output_converter(self, result: Any) -> Union[Dict[str, Any], None]:
+        if self.requests_outputs_variables_num == 1:
+            result = [result]
+        elif self.requests_outputs_variables_num > 1:
+            result = list(result)
+        else:
+            return None
         result_json = {}
         for iter, backbone_output in enumerate(self.backbone_outputs):
             if result[iter] is None:
                 result_json[iter] = {"content": None}
             elif backbone_output == "image":
                 assert isinstance(result[iter], np.ndarray)
+                result[iter] = cv2.cvtColor(result[iter], cv2.COLOR_RGB2BGR)
                 result[iter] = cv2.imencode(".jpg", result[iter])[1].tostring()
                 result_json[iter] = {"content": base64.b64encode(result[iter])}
             elif backbone_output == "text":
@@ -185,6 +193,7 @@ class BaseRequests:
     - inputs: Json
     - methods: 请求的类型，可选值为["GET", "POST", "PUT", "DELETE"]
     """
+
     def base_request(self,
                      url: str,
                      inputs: Dict[str, Any],
@@ -216,13 +225,13 @@ class BaseRequests:
         return self.base_request(url, inputs, "POST")
 
     def get(self,
-             url: str,
-             inputs: Dict[str, Any],
-             ):
+            url: str,
+            inputs: Dict[str, Any],
+            ):
         return self.base_request(url, inputs, "get")
 
 
 def SwanRequests(url: str,
-             inputs: Dict[str, Any],
-             methods: str = "POST"):
+                 inputs: Dict[str, Any],
+                 methods: str = "POST"):
     return BaseRequests().base_request(url, inputs, methods)
