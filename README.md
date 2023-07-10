@@ -157,3 +157,11 @@ cv2.imwrite("output.jpg", img_restore)
 curl --location 'http://127.0.0.1:8000/predictions/' \
 --form 'image=@"./test.jpg"'
 ```
+
+
+
+## 🏠贡献者
+
+<a href="https://github.com/BlackSwanXDU/SwanAPI/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=BlackSwanXDU/SwanAPI" /></a>
+
