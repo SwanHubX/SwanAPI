@@ -5,13 +5,9 @@
 
 
 
-
 <div align="center">
   <a href="https://pypi.org/project/swanapi" target="_blank">
     <img src="https://img.shields.io/pypi/v/swanapi?color=%2334D058&label=pypi%20package" alt="Package version"></a>
-<a href="https://pypi.org/project/fastapi" target="_blank">
-    <img src="https://img.shields.io/pypi/pyversions/fastapi.svg?color=%2334D058" alt="Supported Python versions">
-</a>
 </div>
 
 <span style="text-align:center; display:inline-block; width:100%">🤖️机器学习项目三行代码变API</span>
