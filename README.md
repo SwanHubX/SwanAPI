@@ -2,17 +2,15 @@
 <img src="assets/logo.png" width="600">
 </div>
 
-
-
-
 <div align="center">
   <a href="https://pypi.org/project/swanapi" target="_blank">
     <img src="https://img.shields.io/pypi/v/swanapi?color=%2334D058&label=pypi%20package" alt="Package version"></a>
 </div>
+<div align="center">
+    🤖️机器学习项目三行代码变API, <a href="https://github.com/BlackSwanXDU/SwanAPI/wiki/How-to-Work" target="_blank">🔥详细文档</a><br>
+</div>
 
-<span style="text-align:center; display:inline-block; width:100%">🤖️机器学习项目三行代码变API</span>
-
-<span style="text-align:center; display:inline-block; width:100%">[English](README_EN.md)</span>
+ [English](README_EN.md)
 
 ## ⬆️预期功能（全力迭代中）
 
@@ -159,4 +157,3 @@ cv2.imwrite("output.jpg", img_restore)
 curl --location 'http://127.0.0.1:8000/predictions/' \
 --form 'image=@"./test.jpg"'
 ```
-
