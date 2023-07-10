@@ -13,8 +13,8 @@ class BaseInference:
         # self.mode's options - ["both", "input_only", "output_only"]
         self.mode = "both"
         self.fn = None
-        self.inputs = None
-        self.outputs = None
+        self.backbone_inputs = None
+        self.backbone_outputs = None
         self.signature = None
         self.fn_param_names = None
         self.TYPES = {
@@ -26,11 +26,11 @@ class BaseInference:
         }
         self.types_list = list(self.TYPES.keys())
         self.outputs_typing = None
-        self.prediction_inputs = None
-        self.prediction_inputs_keys = None
-        self.prediction_output_num_variables = None
+        self.requests_inputs = None
+        self.requests_inputs_param_names = None
+        self.requests_outputs_variables_num = None
 
-    def inference_type_checker(self) -> None:
+    def backbone_type_checker(self) -> None:
         # 如果fn是列表，报错
         if isinstance(self.fn, list):
             raise DeprecationWarning(
@@ -39,140 +39,139 @@ class BaseInference:
             )
 
         # 如果输入、输出定义为None或空列表，报错
-        if (self.inputs is None or self.inputs == []) and (self.outputs is None or self.outputs == []):
+        if (self.backbone_inputs is None or self.backbone_inputs == []) and\
+                (self.backbone_outputs is None or self.backbone_outputs == []):
             raise ValueError("Must provide at least one of `inputs` or `outputs`")
         # 如果输出为空，但是输入不为空
-        elif self.outputs is None or self.outputs == []:
-            self.outputs = []
+        elif self.backbone_outputs is None or self.backbone_outputs == []:
+            self.backbone_outputs = []
             self.mode = "input_only"
         # 如果输入为空，但是输出不为空
-        elif self.inputs is None or self.inputs == []:
-            self.inputs = []
+        elif self.backbone_inputs is None or self.backbone_inputs == []:
+            self.backbone_inputs = []
             self.mode = "output_only"
 
         # 类型检查: 输入、输出的类型是否为str或list, 如果类型是str，转换为list
-        assert isinstance(self.inputs, (str, list))
-        assert isinstance(self.outputs, (str, list))
-        if not isinstance(self.inputs, list):
-            self.inputs = [self.inputs]
-        if not isinstance(self.outputs, list):
-            self.outputs = [self.outputs]
+        assert isinstance(self.backbone_inputs, (str, list))
+        assert isinstance(self.backbone_outputs, (str, list))
+        if not isinstance(self.backbone_inputs, list):
+            self.backbone_inputs = [self.backbone_inputs]
+        if not isinstance(self.backbone_outputs, list):
+            self.backbone_outputs = [self.backbone_outputs]
 
-        # 类型检查: 输入的类型是否在io_types中
+        # 类型检查: 输入的类型是否在self.types_list中
         if self.mode == "both":
-            assert check_elements_in_list(self.inputs, self.types_list)
-            assert check_elements_in_list(self.outputs, self.types_list)
+            assert check_elements_in_list(self.backbone_inputs, self.types_list)
+            assert check_elements_in_list(self.backbone_outputs, self.types_list)
         elif self.mode == "input_only":
-            assert check_elements_in_list(self.inputs, self.types_list)
+            assert check_elements_in_list(self.backbone_inputs, self.types_list)
         else:
-            assert check_elements_in_list(self.outputs, self.types_list)
+            assert check_elements_in_list(self.backbone_outputs, self.types_list)
 
-    def get_fn_information(self) -> None:
-        # 得到fn函数的签名信息
-        self.signature = inspect.signature(self.fn)
+    def backbone_get_fn_parameters(self) -> None:
+        # 使用inspect库，得到fn函数的签名变量
+        signature = inspect.signature(self.fn)
 
-        # 得到fn函数的参数名
-        self.fn_param_names = [param for param in self.signature.parameters]
+        # 得到fn函数的参数名列表，形如["input_image", "input_text"]
+        self.fn_param_names = [param for param in signature.parameters]
 
-        # 判断inputs的数量大于fn定义的数量
-        if len(self.fn_param_names) < len(self.inputs):
-            raise ValueError("inputs长度不应该大于函数的参数个数")
+        # 判断inputs的数量是否大于fn定义的数量
+        # 如果大于，则报错
+        # 如果小于，则截取fn定义的前len(inputs)个参数
+        if len(self.fn_param_names) < len(self.backbone_inputs):
+            raise ValueError("SwanInference中inputs的长度不应该大于fn的参数个数")
         else:
-            self.fn_param_names = self.fn_param_names[: len(self.inputs)]
+            self.fn_param_names = self.fn_param_names[: len(self.backbone_inputs)]
 
-    def prediction_input_type_checker(self, inputs: Dict[str, Any]) -> None:
-        # 对于网络请求的输入进行检查
-        self.prediction_inputs = inputs
-        self.prediction_inputs_keys = list(self.prediction_inputs.keys())
-        assert len(self.prediction_inputs_keys) == len(self.inputs), "请求传入的参数数量与inputs定义的不一致"
-        assert check_elements_in_list(self.prediction_inputs_keys, self.fn_param_names), "请求传入的参数key与fn定义的不一致"
+    def requests_input_type_checker(self, requests_inputs: Dict[str, Any]) -> None:
+        """
+        检查网络请求的输入参数：
+        1. 长度是否合格-与len(self.backbones)相等
+        2. 参数名是否与self.fn_param_names匹配
+        """
+        # self.requests_inputs - 用户输入的完整json字典
+        self.requests_inputs = requests_inputs
+        # 获取网络请求的参数个数
+        self.requests_inputs_param_names = list(self.requests_inputs.keys())
+        # 判断网络请求输入的参数的个数是否与inputs定义的个数一致
+        assert len(self.requests_inputs_param_names) == len(self.backbone_inputs), "请求传入的参数数量与inputs定义的不一致"
+        # 判断网络请求输入的参数名是否与fn定义的一致
+        assert check_elements_in_list(self.requests_inputs_param_names, self.fn_param_names), "请求传入的参数key与fn定义的不一致"
 
-    def prediction_input_converter(self) -> None:
-        # 根据post输入类型，做相应的转换
+    def requests_input_converter(self) -> None:
+        # 对于每一个requests内容的输入类型，做相应的转换
         for iter, param_name in enumerate(self.fn_param_names):
             # param_name : 'input_image', 'custom_size_height', 'custom_size_width'
-            values = self.prediction_inputs[param_name]
+            # 获取内容values
+            values = self.requests_inputs[param_name]
             # 对于输入的类型为image的情况
-            if self.inputs[iter] == "image":
+            if self.backbone_inputs[iter] == "image":
                 if isinstance(values, bytes):
-                    self.prediction_inputs[param_name] = cv2.imdecode(np.frombuffer(values, np.uint8), cv2.IMREAD_UNCHANGED)
+                    self.requests_inputs[param_name] = \
+                        cv2.imdecode(np.frombuffer(values, np.uint8), cv2.IMREAD_UNCHANGED)
                 # 如果输入的是字符串，则作为图像路径处理
                 elif isinstance(values, str):
-                    self.prediction_inputs[param_name] = cv2.imread(values, cv2.IMREAD_UNCHANGED)
+                    self.requests_inputs[param_name] = cv2.imread(values, cv2.IMREAD_UNCHANGED)
                 else:
-                    raise TypeError("输入的类型与定义的image类型不一致")
+                    raise TypeError("网络请求中{}的类型与定义的image类型不一致".format(param_name))
 
             # 对于输入的类型为number的情况
-            elif self.inputs[iter] == "number":
-                assert is_float(values), "输入的类型与定义的number类型不一致"
-                self.prediction_inputs[param_name] = float(values)
+            elif self.backbone_inputs[iter] == "number":
+                assert is_float(values), "网络请求中{}的类型与定义的number类型不一致".format(param_name)
+                self.requests_inputs[param_name] = float(values)
+
             # 对于输入的类型为text的情况
-            elif self.inputs[iter] == "text":
-                assert isinstance(values, str), "输入的类型与定义的text类型不一致"
-                self.prediction_inputs[param_name] = values
+            elif self.backbone_inputs[iter] == "text":
+                assert isinstance(values, str), "网络请求中{}的类型与定义的text类型不一致".format(param_name)
+                self.requests_inputs[param_name] = values
+
             # 对于输入的类型为list的情况
-            elif self.inputs[iter] == "list":
-                self.prediction_inputs[param_name] = is_list(values)
+            elif self.backbone_inputs[iter] == "list":
+                self.requests_inputs[param_name] = is_list(values)
+
             # 对于输入的类型为dict的情况
-            elif self.inputs[iter] == self.TYPES["dict"]:
-                self.prediction_inputs[param_name] = is_dict(values)
+            elif self.backbone_inputs[iter] == "dict":
+                self.requests_inputs[param_name] = is_dict(values)
+
             else:
-                raise TypeError("输入的类型与定义的不一致")
+                raise TypeError("backbone_type_checker have BUGs")
 
-    def prediction_output_type_checker(self, result: Any) -> None:
-        # 判断返回值类型是否为元组
+    def requests_output_type_checker(self, result: Any) -> None:
+        # 根据result得到返回变量数量
         if isinstance(result, tuple):
-            self.prediction_output_num_variables = len(result)
+            self.requests_outputs_variables_num = len(result)
+        # Todo:对于输出为0/None的兼容性开发
         elif result is None:
-            self.prediction_output_num_variables = 0
+            self.requests_outputs_variables_num = 0
         else:
-            self.prediction_output_num_variables = 1
+            self.requests_outputs_variables_num = 1
 
-        assert self.prediction_output_num_variables == len(self.outputs), "输出的数量与定义的不一致"
+        assert self.requests_outputs_variables_num == len(self.backbone_outputs), "fn输出的数量与outputs定义的不一致"
 
-    def prediction_output_converter(self, result: Any) -> Dict[str, Any]:
-        # 如果输出的变量数量1
-        if self.prediction_output_num_variables == 1:
-            if result is None:
-                result = None
-            elif self.outputs == ["image"]:
-                assert isinstance(result, np.ndarray)
-                result = cv2.imencode(".jpg", result)[1].tostring()
-                result = base64.b64encode(result)
-            elif self.outputs == ["text"]:
-                assert isinstance(result, str)
-            elif self.outputs == ["number"]:
-                assert isinstance(result, (int, float))
-            elif self.outputs == ["dict"]:
+    def requests_output_converter(self, result: Any) -> Dict[str, Any]:
+        result = list(result)
+        result_json = {}
+        for iter, backbone_output in enumerate(self.backbone_outputs):
+            if result[iter] is None:
+                result_json[iter] = {"content": None}
+            elif backbone_output == "image":
+                assert isinstance(result[iter], np.ndarray)
+                result[iter] = cv2.imencode(".jpg", result[iter])[1].tostring()
+                result_json[iter] = {"content": base64.b64encode(result[iter])}
+            elif backbone_output == "text":
+                assert isinstance(result[iter], str)
+                result_json[iter] = {"content": result[iter]}
+            elif backbone_output == "number":
+                assert isinstance(result[iter], (int, float))
+                result_json[iter] = {"content": result[iter]}
+            elif backbone_output == ["dict"]:
                 assert isinstance(result, dict)
-            elif self.outputs == ["list"]:
+                result_json[iter] = {"content": result[iter]}
+            elif backbone_output == ["list"]:
                 assert isinstance(result, list)
-            result_json = {"content": result}
-        # 如果输出的变量数量>=2
-        elif self.prediction_output_num_variables >= 2:
-            result = list(result)
-            result_json = {}
-            for iter, output in enumerate(self.outputs):
-                if result[iter] is None:
-                    result_json[iter] = {"content": None}
-                elif output == "image":
-                    assert isinstance(result[iter], np.ndarray)
-                    result[iter] = cv2.imencode(".jpg", result[iter])[1].tostring()
-                    result_json[iter] = {"content": base64.b64encode(result[iter])}
-                elif output == "text":
-                    assert isinstance(result[iter], str)
-                    result_json[iter] = {"content": result[iter]}
-                elif output == "number":
-                    assert isinstance(result[iter], (int, float))
-                    result_json[iter] = {"content": result[iter]}
-                elif self.outputs == ["dict"]:
-                    assert isinstance(result, dict)
-                    result_json[iter] = {"content": result[iter]}
-                elif self.outputs == ["list"]:
-                    assert isinstance(result, list)
-                    result_json[iter] = {"content": result[iter]}
-        else:
-            result_json = {"content": None}
+                result_json[iter] = {"content": result[iter]}
+            else:
+                raise TypeError("类型检查模块存在Bug")
 
         return result_json
 
@@ -206,8 +205,6 @@ class BaseRequests:
             inputs_dict['files'] = files
         if len(payload) != 0:
             inputs_dict['data'] = payload
-
-        print(inputs_dict)
 
         response = requests.request(methods, url, headers=headers, **inputs_dict)
         return response.json()
