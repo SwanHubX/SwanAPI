@@ -7,7 +7,7 @@
     <img src="https://img.shields.io/pypi/v/swanapi?color=%2334D058&label=pypi%20package" alt="Package version"></a>
 </div>
 <div align="center">
-    🤖️机器学习项目三行代码变API, <a href="https://github.com/BlackSwanXDU/SwanAPI/wiki/How-to-Work" target="_blank">🔥详细文档</a><br>
+    🤖️机器学习项目极速变为API, <a href="https://github.com/BlackSwanXDU/SwanAPI/wiki/How-to-Work" target="_blank">🔥详细文档</a><br>
 </div>
 
  [English](README_EN.md)
