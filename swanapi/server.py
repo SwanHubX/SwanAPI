@@ -1,8 +1,10 @@
 from flask import Flask, request
 from typing import Any, Callable, Dict, List, Optional, Type, Union
-from .utils import bytes_encoder
+from .utils import utils
 from .base_inference import BaseInference
 import json
+
+import time
 
 app = Flask("SwanAPI Server")
 
@@ -46,7 +48,6 @@ class SwanInference(BaseInference):
         self.requests_input_type_checker(inputs)
         # 根据类型转换为符合Backbone定义的输入类型
         self.requests_input_converter()
-
         # 调用fn, 得到结果
         result = self.fn(**self.requests_inputs)
 
@@ -56,7 +57,7 @@ class SwanInference(BaseInference):
         result_json = self.requests_output_converter(result)
 
         # 将结果转换为json格式
-        return json.dumps(result_json, default=bytes_encoder)
+        return json.dumps(result_json, default=utils.bytes_encoder)
 
     def launch(self,
                server_name: str = "0.0.0.0",

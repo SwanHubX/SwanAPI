@@ -1,11 +1,9 @@
-from .utils import check_elements_in_list, is_float, is_list, is_dict
+from .utils import utils
 from typing import Any, Callable, Dict, List, Optional, Type, Union
 import inspect
 import numpy as np
-import cv2
-import base64
-import requests
-from .swan_types import Files
+from PIL import Image as _Image
+from pathlib import Path
 
 
 class BaseInference:
@@ -61,12 +59,12 @@ class BaseInference:
 
         # 类型检查: 输入的类型是否在self.types_list中
         if self.mode == "both":
-            assert check_elements_in_list(self.backbone_inputs, self.types_list)
-            assert check_elements_in_list(self.backbone_outputs, self.types_list)
+            assert utils.check_elements_in_list(self.backbone_inputs, self.types_list)
+            assert utils.check_elements_in_list(self.backbone_outputs, self.types_list)
         elif self.mode == "input_only":
-            assert check_elements_in_list(self.backbone_inputs, self.types_list)
+            assert utils.check_elements_in_list(self.backbone_inputs, self.types_list)
         else:
-            assert check_elements_in_list(self.backbone_outputs, self.types_list)
+            assert utils.check_elements_in_list(self.backbone_outputs, self.types_list)
 
     def backbone_get_fn_parameters(self) -> None:
         # 使用inspect库，得到fn函数的签名变量
@@ -96,7 +94,7 @@ class BaseInference:
         # 判断网络请求输入的参数的个数是否与inputs定义的个数一致
         assert len(self.requests_inputs_param_names) == len(self.backbone_inputs), "请求传入的参数数量与inputs定义的不一致"
         # 判断网络请求输入的参数名是否与fn定义的一致
-        assert check_elements_in_list(self.requests_inputs_param_names, self.fn_param_names), "请求传入的参数key与fn定义的不一致"
+        assert utils.check_elements_in_list(self.requests_inputs_param_names, self.fn_param_names), "请求传入的参数key与fn定义的不一致"
 
     def requests_input_converter(self) -> None:
         # 对于每一个requests内容的输入类型，做相应的转换
@@ -106,20 +104,19 @@ class BaseInference:
             values = self.requests_inputs[param_name]
             # 对于输入的类型为image的情况
             if self.backbone_inputs[iter] == "image":
+                # 如果输入的是字节流，则使用imdecode解码图像
                 if isinstance(values, bytes):
-
-                    self.requests_inputs[param_name] = \
-                        cv2.cvtColor(cv2.imdecode(np.frombuffer(values, np.uint8), cv2.IMREAD_COLOR),
-                                     cv2.COLOR_RGB2BGR)
-                # 如果输入的是字符串，则作为图像路径处理
+                    self.requests_inputs[param_name] = utils.bytes_to_array(values)
+                # 如果输入的是字符串，则作为图像路径处理，使用Imread读取图像
                 elif isinstance(values, str):
-                    self.requests_inputs[param_name] = cv2.imread(values, cv2.IMREAD_UNCHANGED)
+                    im = _Image.open(values)
+                    self.requests_inputs[param_name] = np.array(im)
                 else:
                     raise TypeError("网络请求中{}的类型与定义的image类型不一致".format(param_name))
 
             # 对于输入的类型为number的情况
             elif self.backbone_inputs[iter] == "number":
-                assert is_float(values), "网络请求中{}的类型与定义的number类型不一致".format(param_name)
+                assert utils.is_float(values), "网络请求中{}的类型与定义的number类型不一致".format(param_name)
                 self.requests_inputs[param_name] = float(values)
 
             # 对于输入的类型为text的情况
@@ -129,11 +126,11 @@ class BaseInference:
 
             # 对于输入的类型为list的情况
             elif self.backbone_inputs[iter] == "list":
-                self.requests_inputs[param_name] = is_list(values)
+                self.requests_inputs[param_name] = utils.is_list(values)
 
             # 对于输入的类型为dict的情况
             elif self.backbone_inputs[iter] == "dict":
-                self.requests_inputs[param_name] = is_dict(values)
+                self.requests_inputs[param_name] = utils.is_dict(values)
 
             else:
                 raise TypeError("backbone_type_checker have BUGs")
@@ -161,77 +158,36 @@ class BaseInference:
         for iter, backbone_output in enumerate(self.backbone_outputs):
             if result[iter] is None:
                 result_json[iter] = {"content": None}
+
             elif backbone_output == "image":
-                assert isinstance(result[iter], np.ndarray)
-                result[iter] = cv2.cvtColor(result[iter], cv2.COLOR_RGB2BGR)
-                result[iter] = cv2.imencode(".jpg", result[iter])[1].tostring()
-                result_json[iter] = {"content": base64.b64encode(result[iter])}
+                y = result[iter]
+                if isinstance(y, np.ndarray):
+                    im_base64 = utils.encode_array_to_base64(y)
+                elif isinstance(y, _Image.Image):
+                    im_base64 = utils.encode_pil_to_base64(y)
+                elif isinstance(y, (str, Path)):
+                    im_base64 = utils.encode_url_or_file_to_base64(y)
+                else:
+                    raise ValueError("Cannot process this value as an Image")
+                result_json[iter] = {"content": im_base64}
+
             elif backbone_output == "text":
                 assert isinstance(result[iter], str)
                 result_json[iter] = {"content": result[iter]}
+
             elif backbone_output == "number":
                 assert isinstance(result[iter], (int, float))
                 result_json[iter] = {"content": result[iter]}
+
             elif backbone_output == ["dict"]:
                 assert isinstance(result, dict)
                 result_json[iter] = {"content": result[iter]}
+
             elif backbone_output == ["list"]:
                 assert isinstance(result, list)
                 result_json[iter] = {"content": result[iter]}
+
             else:
                 raise TypeError("类型检查模块存在Bug")
 
         return result_json
-
-
-class BaseRequests:
-    """
-    增加在Python端快速调用SwanAPI服务的类。
-    主要降低API调用的门槛，尤其是对图像等数据类型。
-    必要输入：
-    - url: str, API的url地址
-    - inputs: Json
-    - methods: 请求的类型，可选值为["GET", "POST", "PUT", "DELETE"]
-    """
-
-    def base_request(self,
-                     url: str,
-                     inputs: Dict[str, Any],
-                     methods: str):
-        payload = {}
-        files = []
-        headers = {}
-
-        for key, value in inputs.items():
-            # 如果value的类型是文件类型
-            if isinstance(value, Files):
-                files.append((key, value.content()))
-            else:
-                payload[key] = value
-
-        inputs_dict = {}
-        if len(files) != 0:
-            inputs_dict['files'] = files
-        if len(payload) != 0:
-            inputs_dict['data'] = payload
-
-        response = requests.request(methods, url, headers=headers, **inputs_dict)
-        return response.json()
-
-    def post(self,
-             url: str,
-             inputs: Dict[str, Any],
-             ):
-        return self.base_request(url, inputs, "POST")
-
-    def get(self,
-            url: str,
-            inputs: Dict[str, Any],
-            ):
-        return self.base_request(url, inputs, "get")
-
-
-def SwanRequests(url: str,
-                 inputs: Dict[str, Any],
-                 methods: str = "POST"):
-    return BaseRequests().base_request(url, inputs, methods)
