@@ -4,8 +4,6 @@ from .utils import utils
 from .base_inference import BaseInference
 import json
 
-import time
-
 app = Flask("SwanAPI Server")
 
 
@@ -21,8 +19,8 @@ class SwanInference(BaseInference):
 
     def inference(self,
                   fn: Callable,
-                  inputs: Union[list[str], str, None] = None,
-                  outputs: Union[list[str], str, None] = None,
+                  inputs: Union[list, str, None] = None,
+                  outputs: Union[list, str, None] = None,
                   description: str = None
                   ) -> None:
         """

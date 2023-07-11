@@ -56,14 +56,16 @@ class SwanYaml:
 
     def build_gpu_typecheck(self) -> None:
         GPU_LIST = ['false', 'true']
-        GPU_DEFAULT = "false"
+        GPU_INPUT = str(self.config_buid["gpu"]).lower()
         if 'gpu' in self.config_buid:
-            if str(self.config_buid["gpu"]).lower() not in GPU_LIST:
-                raise TypeError("[Error] 'gpu' in swan.yaml is not bool")
+            if GPU_INPUT not in GPU_LIST:
+                raise TypeError(
+                    "[Error] 'gpu' in swan.yaml 必须是 'true' 或 'false'"
+                )
             else:
-                self.gpu = self.config_buid["gpu"]
+                self.gpu = True if GPU_INPUT == 'true' else False
         else:
-            self.gpu = GPU_DEFAULT
+            self.gpu = False
 
     def build_system_packages_typecheck(self) -> None:
         if 'system_packages' in self.config_buid:
