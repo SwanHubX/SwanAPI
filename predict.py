@@ -1,14 +1,13 @@
 from swanapi import SwanInference
 
 
-def predict(im):
-    return im
+def predict(text):
+    print(text)
 
 
 if __name__ == "__main__":
     api = SwanInference()
     api.inference(predict,
-                  inputs=['image'],
-                  outputs=['image'],
+                  inputs=['text'],
                   description="a simple test")
     api.launch()

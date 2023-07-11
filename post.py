@@ -5,9 +5,10 @@ import cv2
 
 response = SwanRequests(
     url="http://127.0.0.1:8000/predictions/",
-    inputs={"im": Files("./test.jpg")})
+    inputs={'text': 123})
 
-image_base64 = response[str(0)]['content']
-nparr = np.frombuffer(base64.b64decode(image_base64), np.uint8)
-img_restore = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-cv2.imwrite("output.jpg", img_restore)
+print(response)
+# image_base64 = response[str(0)]['content']
+# nparr = np.frombuffer(base64.b64decode(image_base64), np.uint8)
+# img_restore = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+# cv2.imwrite("output.jpg", img_restore)

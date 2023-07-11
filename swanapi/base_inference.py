@@ -139,26 +139,24 @@ class BaseInference:
         # 根据result得到返回变量数量
         if isinstance(result, tuple):
             self.requests_outputs_variables_num = len(result)
-        # Todo:对于输出为0/None的兼容性开发
-        elif result is None:
-            self.requests_outputs_variables_num = 0
         else:
             self.requests_outputs_variables_num = 1
 
-        assert self.requests_outputs_variables_num == len(self.backbone_outputs), "fn输出的数量与outputs定义的不一致"
+        assert self.requests_outputs_variables_num >= len(self.backbone_outputs), "fn返回结果的数量不能小于backbone_outputs的数量"
 
     def requests_output_converter(self, result: Any) -> Union[Dict[str, Any], None]:
         if self.requests_outputs_variables_num == 1:
             result = [result]
-        elif self.requests_outputs_variables_num > 1:
-            result = list(result)
         else:
+            result = list(result)
+
+        if len(self.backbone_outputs) == 0:
             return None
+
         result_json = {}
         for iter, backbone_output in enumerate(self.backbone_outputs):
             if result[iter] is None:
                 result_json[iter] = {"content": None}
-
             elif backbone_output == "image":
                 y = result[iter]
                 if isinstance(y, np.ndarray):
