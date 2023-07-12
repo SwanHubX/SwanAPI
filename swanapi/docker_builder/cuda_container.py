@@ -1,5 +1,19 @@
 from pynvml import *
-import subprocess
+import platform
+
+
+def platform_detect():
+    platform_system = platform.system().lower()
+    # if "macos" in platform_system:
+    #     return "macos"
+    if "windows" in platform_system:
+        return "windows"
+    elif "wsl" in platform_system:
+        return "wsl"
+    elif "linux" in platform_system:
+        return "linux"
+    else:
+        raise ValueError("不支持的操作系统")
 
 
 class NVDetection():
@@ -49,15 +63,26 @@ class GPUCommad():
         self.cuda_base_image_tag = self.get_cuda_base_image_tag()
 
     def get_gpu_command(self):
-        commond = f"""
+        platform_system = platform_detect()
+
+        if platform_system == "wsl":
+            commond = f"""
+distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
+curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add -
+curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
+sudo apt-get update && sudo apt-get install -y nvidia-container-toolkit
+sudo service restart docker
+docker pull {self.cuda_base_image_tag}
+        """
+        else:
+            commond = f"""
 distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
 curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add -
 curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
 sudo apt-get update && sudo apt-get install -y nvidia-container-toolkit
 sudo systemctl restart docker
 docker pull {self.cuda_base_image_tag}
-        """
-
+                    """
         return commond
 
     def get_cuda_base_image_tag(self):

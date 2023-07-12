@@ -1,30 +1,18 @@
 <div align="center">
 <img src="assets/logo.png" width="600">
 </div>
-
 <div align="center">
   <a href="https://pypi.org/project/swanapi" target="_blank">
     <img src="https://img.shields.io/pypi/v/swanapi?color=%2334D058&label=pypi%20package" alt="Package version"></a>
 </div>
-<div align="center">
-    🤖️机器学习项目极速变为API, <a href="https://github.com/BlackSwanXDU/SwanAPI/wiki/How-to-Work" target="_blank">🔥详细文档</a><br>
-</div>
+ <p align="center"><a href="README_EN.md">English</a></p>
 
- [English](README_EN.md)
+## 🥳已实现功能
 
-## ⬆️预期功能（全力迭代中）
-
-1. 三行代码生成高性能API
-
-2. 轻松打包机器学习API镜像
-
-   - 轻松：仅需增加极少量的代码
-
-   - 打包：无需担心CUDA、cudnn等GPU环境与PyTorch、TensorFlow等机器学习库配置，一键式打包搞定
-
-3. 快速理解与调试：自动创建API文档与调试GUI
-
-4. 调用云端API
+1. 零门槛极速生成模型API
+2. 零门槛极速打包深度学习镜像
+   - 支持Linux/Win/WSL/MacOS上的CPU Docker镜像快速打包
+   - 支持Linux/Win/WSL上的GPU Docker镜像快速打包
 
 
 
@@ -37,44 +25,28 @@
 
 ## 🔧安装
 
-```
+<a href="https://pypi.org/project/swanapi" target="_blank">
+    <img src="https://img.shields.io/pypi/v/swanapi?color=%2334D058&label=pypi%20package" alt="Package version"></a>
+
+```bash
 pip install swanapi -i https://pypi.org/simple
 ```
 
 
 
-## 💻准备
+## 🚀本地API服务
 
-1⃣️ 在 `swan.yaml`中，定义模型运行的Docker环境：
+1⃣️ 写一个`predict.py`文件, 这里我们以图像转黑白进行举例：
 
-```yaml
-build:
-  gpu: false
-  system_packages:
-    - "libgl1-mesa-glx"
-    - "libglib2.0-0"
-  python_version: "3.10"
-  python_packages:
-    - "numpy"
-    - "onnxruntime"
-    - "opencv-python"
-predict:
-  port: 8000
-```
-
-ps：如果你在中国, 可以在build下添加 `python_source: "cn"`以使用清华源安装 `python_packages`.
-
-
-
-2⃣️ 在 `predict.py`中, 定义你的模型推理方式。 😄我们使用[Gradio](https://github.com/gradio-app/gradio)的代码风格：
+> 如果你之前写过Gradio，一定对这种写法并不陌生，与定义`gr.Interface`的方法非常类似。
 
 ```python
 from swanapi import SwanInference
 import cv2
 
 # 这是一个简单的图像转黑白的任务
-def predict(image):
-    result_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+def predict(im):
+    result_image = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
     return "success", result_image
 
 if __name__ == "__main__":
@@ -86,13 +58,9 @@ if __name__ == "__main__":
     api.launch()
 ```
 
-`inputs`和`outputs`支持["text", "image", "number", "list", "dict"]五种类型
 
 
-
-## 🚀运行
-
-现在你可以直接将模型转换为预测服务：
+2⃣️ 运行`python predict.py`，即可在`localhost://127.0.0.1:8000/`上运行一个API推理服务:
 
 ```console
 $ python predict.py
@@ -104,37 +72,28 @@ $ python predict.py
  * Running on http://0.0.0.0:8000/ (Press CTRL+C to quit)
 ```
 
-还可以一个命令构建深度学习推理图像，后台将根据`swan.yaml`配置好一切：
-
-```console
-$ swan build -r -t my-dl-model
---> Building Docker Image...
---> Building Docker Finish.
- * Serving Flask app "app" (lazy loading)
- * Environment: production
-   WARNING: This is a development server. Do not use it in a production deployment.
-   Use a production WSGI server instead.
- * Debug mode: off
- * Running on http://0.0.0.0:8000/ (Press CTRL+C to quit)
-```
 
 
-
-## 🚢调用
-
-请求运行好的模型推理服务(以image-to-image任务为例):
-
-- **Python**
+3⃣️ 调用API
 
 ```python
-import requests
-url = "http://127.0.0.1:8000/predictions/"
-files = [('image', ('test.jpg', open('./test.jpg', 'rb'), 'image/jpeg'))]
-response = requests.request("POST", url, files=files)
-print(response.json())
+from swanapi import SwanRequests, Files
+
+response = SwanRequests(
+    url="http://127.0.0.1:8000/predictions/",
+    inputs={'im': Files("/path/to/image")})  #填写图像文件的本地路径
+
+print(response) 
 ```
 
-你将会收到一个图像编码为base64的Json输出: `{"content":"base64"}`，解码base64后，您将获得图像文件：
+> 如果用`curl`发送请求：
+
+```
+curl --location 'http://127.0.0.1:8000/predictions/' \
+--form 'im=@"path/to/image"'
+```
+
+> outputs设置为'image'时，返回base64编码后的字节流，在python中转换为np.ndarray：
 
 ```python
 import base64
@@ -144,19 +103,63 @@ import cv2
 image_base64 = response.json()['content']
 nparr = np.frombuffer(base64.b64decode(image_base64), np.uint8)
 img_restore = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
 cv2.imwrite("output.jpg", img_restore)
 ```
 
----
 
-其他调用方式：
 
-- **cURL**
 
-```bash
-curl --location 'http://127.0.0.1:8000/predictions/' \
---form 'image=@"./test.jpg"'
+## 🚀快速创建API镜像
+
+在开发`predict.py`完成后：
+
+1⃣️ 创建一个`swan.yaml`文件，它将指导你的镜像构建：
+
 ```
+build:
+  gpu: false
+  system_packages:
+    - "libgl1-mesa-glx"
+    - "libglib2.0-0"
+  python_version: "3.10"
+  python_packages:
+    - "numpy"
+    - "opencv-python"
+predict:
+  port: 8000
+```
+
+build：
+
+- `gpu`: 是否开启gpu模式。true将根据你的硬件配置、python_version以及深度学习框架自动选择最佳的nvidia支持。
+
+- `system_packages`: Linux系统基础库，将使用`apt-get install`它们。
+
+- `python_version`: 镜像运行的基础Python版，支持3.8, 3.9, 3.10。
+
+- `python_packages`: 你的模型依赖的Python库
+  - 如果python库需要指定安装源，可写作`- "torch==2.0.0 --index-url https://download.pytorch.org/whl/cpu"`
+  
+- `python_source`：指定python库的下载源，可选`cn`和`us`，默认`us`。选择`cn`的下载源将使用`清华源`
+
+predict：
+
+- `port`：推理服务开启时的端口号
+
+
+
+2⃣️ 构建镜像：
+
+```
+swan build -t my-dl-image
+```
+
+swan build可选参数：
+
+- `-t`: 必选。指定镜像构建的名称。
+- `-r`: 可选。如果加上该参数，构建好镜像后将运行容器，并做好了端口映射：`swan build -r -t my-dl-image`
+- `-s`: 可选。如果加上该参数，构建好镜像后将在目录下保存Dockefile。
 
 
 
