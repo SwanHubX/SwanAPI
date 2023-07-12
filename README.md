@@ -107,9 +107,9 @@ import cv2
 
 response = SwanRequests(
     url="http://127.0.0.1:8000/predictions/",
-    inputs={'im': Files("/path/to/image")})  #填写图像文件的本地路径
+    inputs={'im': Files("../Feedback/assets/FeedBack.png")})  #填写图像文件的本地路径
 
-image_base64 = response['content']
+image_base64 = response[str(1)]['content']
 nparr = np.frombuffer(base64.b64decode(image_base64), np.uint8)
 img_restore = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 

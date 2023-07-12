@@ -1,21 +1,14 @@
-import torch
-
 from swanapi import SwanRequests, Files
+import base64
+import numpy as np
+import cv2
 
 response = SwanRequests(
     url="http://127.0.0.1:8000/predictions/",
-    inputs={'image': Files("/path/to/image")})
+    inputs={'im': Files("./test.jpg")})  #填写图像文件的本地路径
 
-print(response)
+image_base64 = response[str(1)]['content']
+nparr = np.frombuffer(base64.b64decode(image_base64), np.uint8)
+img_restore = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
-
-class Models():
-    def load_model(self):
-        self.model = torch.hub.load('pytorch/vision:v0.6.0', 'resnet18', pretrained=True)
-
-    def predict(self, inputs):
-        return self.model(inputs)
-
-model = Models()
-model.load_model()
-model.predict(inputs)
+cv2.imwrite("output.jpg", img_restore)
