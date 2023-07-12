@@ -7,6 +7,8 @@
 </div>
  <p align="center"><a href="README_EN.md">English</a></p>
 
+ <br>
+
 ## 🥳已实现功能
 
 1. 零门槛极速生成模型API
@@ -14,14 +16,14 @@
    - 支持Linux/Win/WSL/MacOS上的CPU Docker镜像快速打包
    - 支持Linux/Win/WSL上的GPU Docker镜像快速打包
 
-
+<br>
 
 ## 📚依赖
 
 - Paython3.7+
 - Docker. SwanAPI使用Docker来为你的模型创建容器, 在你运行SwanAPI的镜像打包功能之前, 你需要[安装Docker](https://docs.docker.com/get-docker/)。
 
-
+<br>
 
 ## 🔧安装
 
@@ -32,7 +34,7 @@
 pip install swanapi -i https://pypi.org/simple
 ```
 
-
+<br>
 
 ## 🚀本地API服务
 
@@ -57,7 +59,7 @@ if __name__ == "__main__":
                   description="a simple test")
     api.launch()
 ```
-
+<br>
 
 
 2⃣️ 运行`python predict.py`，即可在`localhost://127.0.0.1:8000/`上运行一个API推理服务:
@@ -71,7 +73,7 @@ $ python predict.py
  * Debug mode: off
  * Running on http://0.0.0.0:8000/ (Press CTRL+C to quit)
 ```
-
+<br>
 
 
 3⃣️ 调用API
@@ -106,7 +108,7 @@ img_restore = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
 cv2.imwrite("output.jpg", img_restore)
 ```
-
+<br>
 
 
 
@@ -147,7 +149,7 @@ predict：
 
 - `port`：推理服务开启时的端口号
 
-
+<br>
 
 2⃣️ 构建镜像：
 
@@ -161,7 +163,7 @@ swan build可选参数：
 - `-r`: 可选。如果加上该参数，构建好镜像后将运行容器，并做好了端口映射：`swan build -r -t my-dl-image`
 - `-s`: 可选。如果加上该参数，构建好镜像后将在目录下保存Dockefile。
 
-
+<br>
 
 ## 🏠贡献者
 
