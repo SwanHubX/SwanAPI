@@ -39,7 +39,7 @@ pip install swanapi -i https://pypi.org/simple
 
 ## 🚀本地API服务
 
-1. 写一个`predict.py`文件, 这里我们以图像转黑白进行举例：
+1️⃣ 写一个`predict.py`文件, 这里我们以图像转黑白进行举例：
 
 > 如果你之前写过Gradio，一定对这种写法并不陌生，与定义`gr.Interface`的方法非常类似。
 
@@ -62,7 +62,7 @@ if __name__ == "__main__":
 ```
 <br>
 
-2. 运行`python predict.py`，即可在`localhost://127.0.0.1:8000/`上运行一个API推理服务:
+2⃣️ 运行`python predict.py`，即可在`localhost://127.0.0.1:8000/`上运行一个API推理服务:
 
 ```console
 $ python predict.py
@@ -75,7 +75,7 @@ $ python predict.py
 ```
 <br>
 
-3. 调用API
+3⃣️ 调用API
 
 ```python
 from swanapi import SwanRequests, Files
@@ -89,7 +89,7 @@ print(response)
 
 > 如果用`curl`发送请求：
 
-```
+```bash
 curl --location 'http://127.0.0.1:8000/predictions/' \
 --form 'im=@"path/to/image"'
 ```
@@ -120,9 +120,9 @@ cv2.imwrite("output.jpg", img_restore)
 
 在开发`predict.py`完成后：
 
-1. 创建一个`swan.yaml`文件，它将指导你的镜像构建：
+1⃣️ 创建一个`swan.yaml`文件，它将指导你的镜像构建
 
-```
+```yaml
 build:
   gpu: false
   system_packages:
@@ -155,9 +155,9 @@ predict：
 
 <br>
 
-2. 构建镜像：
+2⃣️ 构建镜像
 
-```
+```bash
 swan build -t my-dl-image
 ```
 
@@ -169,17 +169,15 @@ swan build可选参数：
 
 <br>
 
-3. 运行容器：
-
-- cpu
+3⃣️ 运行容器
 
 ```bash
 docker run my-dl-image
 ```
 
-- gpu
+> 如果是gpu运行
 
-```
+```bash
 docker run --gpus all my-dl-image
 ```
 
