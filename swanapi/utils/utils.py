@@ -430,5 +430,10 @@ def encode_url_or_file_to_base64(path: Union[str, Path]):
 
 
 def bytes_to_array(bytes_data):
+    """
+    将字节流解码成PIL风格的numpy
+    :param bytes_data:
+    :return:
+    """
     im = _Image.open(BytesIO(bytes_data))
     return np.array(im)

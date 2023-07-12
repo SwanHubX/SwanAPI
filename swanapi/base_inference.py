@@ -27,6 +27,7 @@ class BaseInference:
         self.requests_inputs = None
         self.requests_inputs_param_names = None
         self.requests_outputs_variables_num = None
+        self.description = None
 
     def backbone_type_checker(self) -> None:
         # 如果fn是列表，报错
@@ -94,7 +95,8 @@ class BaseInference:
         # 判断网络请求输入的参数的个数是否与inputs定义的个数一致
         assert len(self.requests_inputs_param_names) == len(self.backbone_inputs), "请求传入的参数数量与inputs定义的不一致"
         # 判断网络请求输入的参数名是否与fn定义的一致
-        assert utils.check_elements_in_list(self.requests_inputs_param_names, self.fn_param_names), "请求传入的参数key与fn定义的不一致"
+        assert utils.check_elements_in_list(self.requests_inputs_param_names,
+                                            self.fn_param_names), "请求传入的参数key与fn定义的不一致"
 
     def requests_input_converter(self) -> None:
         # 对于每一个requests内容的输入类型，做相应的转换
@@ -177,15 +179,17 @@ class BaseInference:
                 assert isinstance(result[iter], (int, float))
                 result_json[iter] = {"content": result[iter]}
 
-            elif backbone_output == ["dict"]:
+            elif backbone_output == "dict":
                 assert isinstance(result, dict)
                 result_json[iter] = {"content": result[iter]}
 
-            elif backbone_output == ["list"]:
+            elif backbone_output == "list":
                 assert isinstance(result, list)
                 result_json[iter] = {"content": result[iter]}
-
             else:
                 raise TypeError("类型检查模块存在Bug")
 
         return result_json
+
+    def get_description(self):
+        return self.description
