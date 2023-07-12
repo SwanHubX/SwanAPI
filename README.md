@@ -40,7 +40,7 @@ pip install swanapi -i https://pypi.org/simple
 
 ## 🚀本地API服务
 
-1⃣️ 写一个`predict.py`文件, 这里我们以图像转黑白进行举例：
+1. 写一个`predict.py`文件, 这里我们以图像转黑白进行举例：
 
 > 如果你之前写过Gradio，一定对这种写法并不陌生，与定义`gr.Interface`的方法非常类似。
 
@@ -63,8 +63,7 @@ if __name__ == "__main__":
 ```
 <br>
 
-
-2⃣️ 运行`python predict.py`，即可在`localhost://127.0.0.1:8000/`上运行一个API推理服务:
+2. 运行`python predict.py`，即可在`localhost://127.0.0.1:8000/`上运行一个API推理服务:
 
 ```console
 $ python predict.py
@@ -77,8 +76,7 @@ $ python predict.py
 ```
 <br>
 
-
-3⃣️ 调用API
+3. 调用API
 
 ```python
 from swanapi import SwanRequests, Files
@@ -123,7 +121,7 @@ cv2.imwrite("output.jpg", img_restore)
 
 在开发`predict.py`完成后：
 
-1⃣️ 创建一个`swan.yaml`文件，它将指导你的镜像构建：
+1. 创建一个`swan.yaml`文件，它将指导你的镜像构建：
 
 ```
 build:
@@ -158,7 +156,7 @@ predict：
 
 <br>
 
-2⃣️ 构建镜像：
+2. 构建镜像：
 
 ```
 swan build -t my-dl-image
