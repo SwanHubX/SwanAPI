@@ -5,11 +5,11 @@
   <a href="https://pypi.org/project/swanapi" target="_blank">
     <img src="https://img.shields.io/pypi/v/swanapi?color=%2334D058&label=pypi%20package" alt="Package version"></a>
 </div>
-
-
  <p align="center"><a href="README_EN.md">English</a></p>
 
  <br>
+
+
 
 ## 🥳已实现功能
 
@@ -17,6 +17,7 @@
 2. 零门槛极速打包深度学习镜像
    - 支持Linux/Win/WSL/MacOS上的CPU Docker镜像快速打包
    - 支持Linux/Win/WSL上的GPU Docker镜像快速打包
+3. [使用案例](https://github.com/SwanHubX/SwanAPI_Examples)
 
 <br>
 
@@ -173,5 +174,5 @@ swan build可选参数：
 ## 🏠贡献者
 
 <a href="https://github.com/BlackSwanXDU/SwanAPI/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=BlackSwanXDU/SwanAPI" /></a>
+  <img src="https://contrib.rocks/image?repo=SwanHubX/SwanAPI" /></a>
 
