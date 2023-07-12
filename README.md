@@ -5,6 +5,8 @@
   <a href="https://pypi.org/project/swanapi" target="_blank">
     <img src="https://img.shields.io/pypi/v/swanapi?color=%2334D058&label=pypi%20package" alt="Package version"></a>
 </div>
+
+
  <p align="center"><a href="README_EN.md">English</a></p>
 
 ## 🥳已实现功能
@@ -96,11 +98,16 @@ curl --location 'http://127.0.0.1:8000/predictions/' \
 > outputs设置为'image'时，返回base64编码后的字节流，在python中转换为np.ndarray：
 
 ```python
+from swanapi import SwanRequests, Files
 import base64
 import numpy as np
 import cv2
 
-image_base64 = response.json()['content']
+response = SwanRequests(
+    url="http://127.0.0.1:8000/predictions/",
+    inputs={'im': Files("/path/to/image")})  #填写图像文件的本地路径
+
+image_base64 = response['content']
 nparr = np.frombuffer(base64.b64decode(image_base64), np.uint8)
 img_restore = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
